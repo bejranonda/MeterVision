@@ -3,3 +3,6 @@ uvicorn
 sqlmodel
 python-multipart
 requests
+passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv
