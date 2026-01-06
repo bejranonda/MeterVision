@@ -7,7 +7,7 @@ A comprehensive platform for managing hierarchical meter infrastructure (Project
 - **Hierarchical Data Management**: Organize meters by Project, Customer, Building, and Place.
 - **Image-Based Readings**: Upload meter photos to automatically improved readings.
 - **REST API**: Fully documented FastAPI backend.
-- **Extensible OCR Service**: Pluggable architecture for integrating advanced OCR models.
+- **Multi-Model OCR**: Ensemble of Tesseract, EasyOCR, and **Google Gemini 3 Flash** for high-accuracy readings.
 
 ## 🛠️ Project Structure
 
@@ -49,6 +49,12 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 ### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
+```
+
+### 3.1. Configure Environment Variables
+Create a `.env.local` file in the root directory and add your Google Gemini API Key:
+```
+GEMINI_API_KEY=your_api_key_here
 ```
 
 ### 4. Run the Server

@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, status
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, status, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import Session, select
-from typing import List
+from sqlmodel import Session, select, SQLModel
+from typing import List, Optional
 from datetime import timedelta
 from .database import create_db_and_tables, get_session
 from .models import (
@@ -15,7 +15,7 @@ from .models import (
     Reading, ReadingBase,
     User
 )
-from .services.ocr import MockMeterReader, save_upload_file
+from .services.ocr import SmartMeterReader, save_upload_file
 from .auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES, 
     create_access_token, 
@@ -29,7 +29,13 @@ from dotenv import load_dotenv
 
 load_dotenv(".env.local")
 
-app = FastAPI()
+app = FastAPI(title="Meter Reading App")
+
+# Create uploads directory if not exists
+os.makedirs("uploads", exist_ok=True)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.on_event("startup")
 def on_startup():
@@ -155,6 +161,7 @@ def read_meter_by_serial(serial_number: str, session: Session = Depends(get_sess
 async def upload_reading(
     serial_number: str, 
     file: UploadFile = File(...), 
+    expected_value: Optional[str] = Form(None),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
@@ -170,9 +177,9 @@ async def upload_reading(
     file_path = os.path.join(upload_dir, filename)
     save_upload_file(file, file_path)
     
-    # 3. Process Image (Mock for now)
-    reader = MockMeterReader()
-    reading_value = reader.read_meter(file_path)
+    # 3. Process Image
+    reader = SmartMeterReader()
+    reading_value = reader.read_meter(file_path, expected_value)
     
     # 4. Save Reading
     reading = Reading(
@@ -186,3 +193,30 @@ async def upload_reading(
     session.commit()
     session.refresh(reading)
     return reading
+
+@app.get("/meters/{serial_number}/readings", response_model=List[Reading])
+def read_readings(serial_number: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    meter = session.exec(select(Meter).where(Meter.serial_number == serial_number)).first()
+    if not meter:
+        raise HTTPException(status_code=404, detail="Meter not found")
+    return session.exec(select(Reading).where(Reading.meter_id == meter.id).order_by(Reading.timestamp.desc())).all()
+
+# --- Meter Configuration ---
+class MeterUpdate(SQLModel):
+    aoi_config: Optional[str] = None
+
+@app.patch("/meters/{serial_number}", response_model=Meter)
+def update_meter_config(serial_number: str, update_data: MeterUpdate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    statement = select(Meter).where(Meter.serial_number == serial_number)
+    results = session.exec(statement)
+    meter = results.first()
+    if not meter:
+        raise HTTPException(status_code=404, detail="Meter not found")
+    
+    if update_data.aoi_config is not None:
+        meter.aoi_config = update_data.aoi_config
+        
+    session.add(meter)
+    session.commit()
+    session.refresh(meter)
+    return meter

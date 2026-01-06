@@ -2,6 +2,11 @@ from typing import List, Optional
 from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
 
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(index=True, unique=True)
+    hashed_password: str
+
 class ProjectBase(SQLModel):
     name: str = Field(index=True, unique=True)
     description: Optional[str] = None
@@ -45,6 +50,7 @@ class MeterBase(SQLModel):
     meter_type: str # Gas, Electricity, Heat
     unit: str # m3, kWh
     place_id: int = Field(foreign_key="place.id")
+    aoi_config: Optional[str] = None # JSON string for AOI coordinates
 
 class Meter(MeterBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

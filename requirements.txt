@@ -6,3 +6,8 @@ requests
 passlib[bcrypt]
 python-jose[cryptography]
 python-dotenv
+pytesseract
+Pillow
+easyocr
+opencv-python-headless
+google-generativeai

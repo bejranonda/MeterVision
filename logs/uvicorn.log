@@ -1,0 +1,28 @@
+INFO:     Started server process [3351660]
+INFO:     Waiting for application startup.
+2026-01-02 13:36:13,429 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-02 13:36:13,429 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user")
+2026-01-02 13:36:13,429 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("project")
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("customer")
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("building")
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("place")
+2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("meter")
+2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reading")
+2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-02 13:36:13,642 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-02 13:36:13,653 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-02 13:36:13,653 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ('admin',)
+2026-01-02 13:36:13,654 INFO sqlalchemy.engine.Engine UPDATE user SET hashed_password=? WHERE user.id = ?
+2026-01-02 13:36:13,654 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ('$2b$12$aizZD53M6hIgOgJ4davvIedpTRBXSUuTZe7gHUbYrRiPFInwTvbe.', 1)
+2026-01-02 13:36:13,655 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
