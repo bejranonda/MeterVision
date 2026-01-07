@@ -1,28 +1,375 @@
-INFO:     Started server process [3351660]
+nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/home/ogema/MeterReading']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [4041132] using StatReload
+/home/ogema/MeterReading/app/services/ocr.py:89: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+INFO:     Started server process [4041135]
 INFO:     Waiting for application startup.
-2026-01-02 13:36:13,429 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-01-02 13:36:13,429 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user")
-2026-01-02 13:36:13,429 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("project")
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("customer")
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("building")
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("place")
-2026-01-02 13:36:13,430 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("meter")
-2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reading")
-2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-01-02 13:36:13,431 INFO sqlalchemy.engine.Engine COMMIT
-2026-01-02 13:36:13,642 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-01-02 13:36:13,653 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user")
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("project")
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("customer")
+2026-01-06 10:10:56,576 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("building")
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("place")
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("meter")
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reading")
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-06 10:10:56,577 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-06 10:10:56,792 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:10:56,803 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
 FROM user 
 WHERE user.username = ?
-2026-01-02 13:36:13,653 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ('admin',)
-2026-01-02 13:36:13,654 INFO sqlalchemy.engine.Engine UPDATE user SET hashed_password=? WHERE user.id = ?
-2026-01-02 13:36:13,654 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ('$2b$12$aizZD53M6hIgOgJ4davvIedpTRBXSUuTZe7gHUbYrRiPFInwTvbe.', 1)
-2026-01-02 13:36:13,655 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-06 10:10:56,803 INFO sqlalchemy.engine.Engine [generated in 0.00017s] ('admin',)
+2026-01-06 10:10:56,805 INFO sqlalchemy.engine.Engine UPDATE user SET hashed_password=? WHERE user.id = ?
+2026-01-06 10:10:56,805 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ('$2b$12$IXnUIlqxoAI9jbxXSJYg1OVv1j.X0d4DQaWoIcb1XDH/EF8hV8tmi', 1)
+2026-01-06 10:10:56,805 INFO sqlalchemy.engine.Engine COMMIT
 INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     84.131.10.176:62650 - "GET / HTTP/1.1" 200 OK
+INFO:     84.131.10.176:62650 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     84.131.10.176:51618 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     84.131.10.176:62650 - "GET /projects/ HTTP/1.1" 401 Unauthorized
+INFO:     84.131.10.176:62650 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+2026-01-06 10:11:16,910 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:16,910 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:16,910 INFO sqlalchemy.engine.Engine [cached since 20.11s ago] ('admin',)
+INFO:     84.131.10.176:62650 - "POST /token HTTP/1.1" 200 OK
+2026-01-06 10:11:17,124 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:17,213 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:17,214 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:17,214 INFO sqlalchemy.engine.Engine [cached since 20.41s ago] ('admin',)
+2026-01-06 10:11:17,217 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:11:17,217 INFO sqlalchemy.engine.Engine [generated in 0.00035s] ()
+INFO:     84.131.10.176:62650 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:11:17,220 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:19,209 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:19,209 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:19,209 INFO sqlalchemy.engine.Engine [cached since 22.41s ago] ('admin',)
+2026-01-06 10:11:19,213 INFO sqlalchemy.engine.Engine SELECT customer.name, customer.email, customer.project_id, customer.id 
+FROM customer
+2026-01-06 10:11:19,214 INFO sqlalchemy.engine.Engine [generated in 0.00037s] ()
+INFO:     84.131.10.176:62650 - "GET /customers/ HTTP/1.1" 200 OK
+2026-01-06 10:11:19,217 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:20,311 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:20,311 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:20,311 INFO sqlalchemy.engine.Engine [cached since 23.51s ago] ('admin',)
+2026-01-06 10:11:20,314 INFO sqlalchemy.engine.Engine SELECT building.name, building.address, building.customer_id, building.id 
+FROM building
+2026-01-06 10:11:20,314 INFO sqlalchemy.engine.Engine [generated in 0.00027s] ()
+INFO:     84.131.10.176:62650 - "GET /buildings/ HTTP/1.1" 200 OK
+2026-01-06 10:11:20,316 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:21,458 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:21,459 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:21,459 INFO sqlalchemy.engine.Engine [cached since 24.66s ago] ('admin',)
+2026-01-06 10:11:21,462 INFO sqlalchemy.engine.Engine SELECT place.name, place.description, place.building_id, place.id 
+FROM place
+2026-01-06 10:11:21,462 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ()
+INFO:     84.131.10.176:62650 - "GET /places/ HTTP/1.1" 200 OK
+2026-01-06 10:11:21,464 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:22,358 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:22,358 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:22,358 INFO sqlalchemy.engine.Engine [cached since 25.56s ago] ('admin',)
+2026-01-06 10:11:22,362 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter
+2026-01-06 10:11:22,362 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ()
+INFO:     84.131.10.176:62650 - "GET /meters_list/ HTTP/1.1" 200 OK
+2026-01-06 10:11:22,364 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:23,224 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:23,224 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:23,224 INFO sqlalchemy.engine.Engine [cached since 26.42s ago] ('admin',)
+2026-01-06 10:11:23,227 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:11:23,227 INFO sqlalchemy.engine.Engine [generated in 0.00038s] ('TEST-6cd4ba13',)
+INFO:     84.131.10.176:62650 - "GET /meters/TEST-6cd4ba13 HTTP/1.1" 200 OK
+2026-01-06 10:11:23,230 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:23,322 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:23,323 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:23,323 INFO sqlalchemy.engine.Engine [cached since 26.52s ago] ('admin',)
+2026-01-06 10:11:23,324 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:11:23,324 INFO sqlalchemy.engine.Engine [cached since 0.09754s ago] ('TEST-6cd4ba13',)
+2026-01-06 10:11:23,329 INFO sqlalchemy.engine.Engine SELECT reading.timestamp, reading.value, reading.raw_image_path, reading.meter_id, reading.status, reading.ocr_confidence, reading.id 
+FROM reading 
+WHERE reading.meter_id = ? ORDER BY reading.timestamp DESC
+2026-01-06 10:11:23,329 INFO sqlalchemy.engine.Engine [generated in 0.00038s] (1,)
+INFO:     84.131.10.176:62650 - "GET /meters/TEST-6cd4ba13/readings HTTP/1.1" 200 OK
+2026-01-06 10:11:23,333 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:36,536 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:36,536 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:36,536 INFO sqlalchemy.engine.Engine [cached since 39.73s ago] ('admin',)
+2026-01-06 10:11:36,538 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:11:36,538 INFO sqlalchemy.engine.Engine [cached since 13.31s ago] ('TEST-6cd4ba13',)
+2026-01-06 10:11:36,540 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-06 10:11:36,541 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:36,545 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.id = ?
+2026-01-06 10:11:36,545 INFO sqlalchemy.engine.Engine [generated in 0.00029s] (1,)
+INFO:     84.131.10.176:60422 - "PATCH /meters/TEST-6cd4ba13 HTTP/1.1" 200 OK
+2026-01-06 10:11:36,547 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:36,671 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:36,672 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:36,672 INFO sqlalchemy.engine.Engine [cached since 39.87s ago] ('admin',)
+2026-01-06 10:11:36,673 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:11:36,673 INFO sqlalchemy.engine.Engine [cached since 13.45s ago] ('TEST-6cd4ba13',)
+Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+/home/ogema/MeterReading/venv/lib/python3.12/site-packages/torch/utils/data/dataloader.py:668: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  warnings.warn(warn_msg)
+OCR Results - Tesseract: 2.0, EasyOCR: 21504.0, Gemini: 21504.259
+2026-01-06 10:11:44,769 INFO sqlalchemy.engine.Engine INSERT INTO reading (timestamp, value, raw_image_path, meter_id, status, ocr_confidence) VALUES (?, ?, ?, ?, ?, ?)
+2026-01-06 10:11:44,769 INFO sqlalchemy.engine.Engine [generated in 0.00059s] ('2026-01-06 09:11:44.766073', 21504.259, '/home/ogema/MeterReading/uploads/53854ca8-083b-4bc7-8bad-fa562546242d.jpg', 1, 'Verified', 1.0)
+2026-01-06 10:11:44,770 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-06 10:11:44,773 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:44,775 INFO sqlalchemy.engine.Engine SELECT reading.timestamp, reading.value, reading.raw_image_path, reading.meter_id, reading.status, reading.ocr_confidence, reading.id 
+FROM reading 
+WHERE reading.id = ?
+2026-01-06 10:11:44,775 INFO sqlalchemy.engine.Engine [generated in 0.00031s] (9,)
+INFO:     84.131.10.176:60422 - "POST /meters/TEST-6cd4ba13/reading HTTP/1.1" 200 OK
+2026-01-06 10:11:44,787 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:11:47,234 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:11:47,235 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:11:47,235 INFO sqlalchemy.engine.Engine [cached since 50.43s ago] ('admin',)
+2026-01-06 10:11:47,237 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:11:47,237 INFO sqlalchemy.engine.Engine [cached since 24.01s ago] ('TEST-6cd4ba13',)
+2026-01-06 10:11:47,238 INFO sqlalchemy.engine.Engine SELECT reading.timestamp, reading.value, reading.raw_image_path, reading.meter_id, reading.status, reading.ocr_confidence, reading.id 
+FROM reading 
+WHERE reading.meter_id = ? ORDER BY reading.timestamp DESC
+2026-01-06 10:11:47,239 INFO sqlalchemy.engine.Engine [cached since 23.91s ago] (1,)
+INFO:     84.131.10.176:60422 - "GET /meters/TEST-6cd4ba13/readings HTTP/1.1" 200 OK
+2026-01-06 10:11:47,241 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:60422 - "GET /uploads/53854ca8-083b-4bc7-8bad-fa562546242d.jpg HTTP/1.1" 200 OK
+2026-01-06 10:12:53,337 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:12:53,338 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:12:53,338 INFO sqlalchemy.engine.Engine [cached since 116.5s ago] ('admin',)
+2026-01-06 10:12:53,339 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:12:53,339 INFO sqlalchemy.engine.Engine [cached since 90.11s ago] ('TEST-6cd4ba13',)
+2026-01-06 10:12:53,341 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-06 10:12:53,342 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:12:53,342 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.id = ?
+2026-01-06 10:12:53,342 INFO sqlalchemy.engine.Engine [cached since 76.8s ago] (1,)
+INFO:     84.131.10.176:63522 - "PATCH /meters/TEST-6cd4ba13 HTTP/1.1" 200 OK
+2026-01-06 10:12:53,344 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:12:53,476 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:12:53,476 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:12:53,477 INFO sqlalchemy.engine.Engine [cached since 116.7s ago] ('admin',)
+2026-01-06 10:12:53,478 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:12:53,478 INFO sqlalchemy.engine.Engine [cached since 90.25s ago] ('TEST-6cd4ba13',)
+Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+/home/ogema/MeterReading/venv/lib/python3.12/site-packages/torch/utils/data/dataloader.py:668: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  warnings.warn(warn_msg)
+OCR Results - Tesseract: 245.0, EasyOCR: 40040.0, Gemini: 21523.347
+2026-01-06 10:13:01,623 INFO sqlalchemy.engine.Engine INSERT INTO reading (timestamp, value, raw_image_path, meter_id, status, ocr_confidence) VALUES (?, ?, ?, ?, ?, ?)
+2026-01-06 10:13:01,623 INFO sqlalchemy.engine.Engine [cached since 76.85s ago] ('2026-01-06 09:13:01.622650', 21523.347, '/home/ogema/MeterReading/uploads/c912ef59-c169-4e18-977a-a3e6afa1b9a5.jpg', 1, 'Verified', 1.0)
+2026-01-06 10:13:01,624 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-06 10:13:01,628 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:13:01,628 INFO sqlalchemy.engine.Engine SELECT reading.timestamp, reading.value, reading.raw_image_path, reading.meter_id, reading.status, reading.ocr_confidence, reading.id 
+FROM reading 
+WHERE reading.id = ?
+2026-01-06 10:13:01,628 INFO sqlalchemy.engine.Engine [cached since 76.85s ago] (10,)
+INFO:     84.131.10.176:63522 - "POST /meters/TEST-6cd4ba13/reading HTTP/1.1" 200 OK
+2026-01-06 10:13:01,631 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:13:04,823 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:13:04,824 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:13:04,824 INFO sqlalchemy.engine.Engine [cached since 128s ago] ('admin',)
+2026-01-06 10:13:04,825 INFO sqlalchemy.engine.Engine SELECT meter.serial_number, meter.meter_type, meter.unit, meter.place_id, meter.aoi_config, meter.id 
+FROM meter 
+WHERE meter.serial_number = ?
+2026-01-06 10:13:04,825 INFO sqlalchemy.engine.Engine [cached since 101.6s ago] ('TEST-6cd4ba13',)
+2026-01-06 10:13:04,827 INFO sqlalchemy.engine.Engine SELECT reading.timestamp, reading.value, reading.raw_image_path, reading.meter_id, reading.status, reading.ocr_confidence, reading.id 
+FROM reading 
+WHERE reading.meter_id = ? ORDER BY reading.timestamp DESC
+2026-01-06 10:13:04,827 INFO sqlalchemy.engine.Engine [cached since 101.5s ago] (1,)
+INFO:     84.131.10.176:63522 - "GET /meters/TEST-6cd4ba13/readings HTTP/1.1" 200 OK
+2026-01-06 10:13:04,829 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:63522 - "GET /uploads/c912ef59-c169-4e18-977a-a3e6afa1b9a5.jpg HTTP/1.1" 200 OK
+2026-01-06 10:13:51,011 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:13:51,011 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:13:51,011 INFO sqlalchemy.engine.Engine [cached since 174.2s ago] ('admin',)
+2026-01-06 10:13:51,012 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:13:51,012 INFO sqlalchemy.engine.Engine [cached since 153.8s ago] ()
+INFO:     84.131.10.176:52107 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:13:51,014 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-06 10:13:52,005 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:13:52,005 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:13:52,005 INFO sqlalchemy.engine.Engine [cached since 175.2s ago] ('admin',)
+2026-01-06 10:13:52,006 INFO sqlalchemy.engine.Engine SELECT customer.name, customer.email, customer.project_id, customer.id 
+FROM customer
+2026-01-06 10:13:52,006 INFO sqlalchemy.engine.Engine [cached since 152.8s ago] ()
+INFO:     84.131.10.176:52107 - "GET /customers/ HTTP/1.1" 200 OK
+2026-01-06 10:13:52,007 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:55321 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:14:04,865 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:14:04,865 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:14:04,865 INFO sqlalchemy.engine.Engine [cached since 188.1s ago] ('admin',)
+2026-01-06 10:14:04,867 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:14:04,867 INFO sqlalchemy.engine.Engine [cached since 167.7s ago] ()
+INFO:     84.131.10.176:55321 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:14:04,869 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:58194 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:25:11,344 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:25:11,344 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:25:11,344 INFO sqlalchemy.engine.Engine [cached since 854.5s ago] ('admin',)
+2026-01-06 10:25:11,345 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:25:11,346 INFO sqlalchemy.engine.Engine [cached since 834.1s ago] ()
+INFO:     84.131.10.176:58194 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:25:11,348 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:58194 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:25:13,653 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:25:13,654 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:25:13,654 INFO sqlalchemy.engine.Engine [cached since 856.9s ago] ('admin',)
+2026-01-06 10:25:13,655 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:25:13,655 INFO sqlalchemy.engine.Engine [cached since 836.4s ago] ()
+INFO:     84.131.10.176:58194 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:25:13,657 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:58194 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:25:17,519 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:25:17,519 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:25:17,519 INFO sqlalchemy.engine.Engine [cached since 860.7s ago] ('admin',)
+2026-01-06 10:25:17,520 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:25:17,520 INFO sqlalchemy.engine.Engine [cached since 840.3s ago] ()
+INFO:     84.131.10.176:58194 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:25:17,522 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:64150 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:27:47,004 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:27:47,005 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:27:47,005 INFO sqlalchemy.engine.Engine [cached since 1010s ago] ('admin',)
+2026-01-06 10:27:47,006 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:27:47,006 INFO sqlalchemy.engine.Engine [cached since 989.8s ago] ()
+INFO:     84.131.10.176:64150 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:27:47,008 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:64150 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:27:48,104 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:27:48,105 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:27:48,105 INFO sqlalchemy.engine.Engine [cached since 1011s ago] ('admin',)
+2026-01-06 10:27:48,106 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:27:48,106 INFO sqlalchemy.engine.Engine [cached since 990.9s ago] ()
+INFO:     84.131.10.176:64150 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:27:48,108 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:64150 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:27:48,715 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:27:48,716 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:27:48,716 INFO sqlalchemy.engine.Engine [cached since 1012s ago] ('admin',)
+2026-01-06 10:27:48,717 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:27:48,717 INFO sqlalchemy.engine.Engine [cached since 991.5s ago] ()
+INFO:     84.131.10.176:64150 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:27:48,719 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:64150 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:27:48,997 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:27:48,998 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:27:48,998 INFO sqlalchemy.engine.Engine [cached since 1012s ago] ('admin',)
+2026-01-06 10:27:48,999 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:27:48,999 INFO sqlalchemy.engine.Engine [cached since 991.8s ago] ()
+INFO:     84.131.10.176:64150 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:27:49,001 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:64150 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:27:49,269 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:27:49,270 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:27:49,270 INFO sqlalchemy.engine.Engine [cached since 1012s ago] ('admin',)
+2026-01-06 10:27:49,271 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:27:49,271 INFO sqlalchemy.engine.Engine [cached since 992.1s ago] ()
+INFO:     84.131.10.176:64150 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:27:49,273 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     84.131.10.176:64150 - "GET / HTTP/1.1" 200 OK
+2026-01-06 10:27:49,549 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-06 10:27:49,550 INFO sqlalchemy.engine.Engine SELECT user.id, user.username, user.hashed_password 
+FROM user 
+WHERE user.username = ?
+2026-01-06 10:27:49,550 INFO sqlalchemy.engine.Engine [cached since 1013s ago] ('admin',)
+2026-01-06 10:27:49,551 INFO sqlalchemy.engine.Engine SELECT project.name, project.description, project.id 
+FROM project
+2026-01-06 10:27:49,551 INFO sqlalchemy.engine.Engine [cached since 992.3s ago] ()
+INFO:     84.131.10.176:64150 - "GET /projects/ HTTP/1.1" 200 OK
+2026-01-06 10:27:49,553 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [4041135]
+INFO:     Stopping reloader process [4041132]

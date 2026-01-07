@@ -1,114 +1,94 @@
-# Meter Reading Platform (MeterVision)
+# 👁️ MeterVision
 
-A comprehensive platform for managing hierarchical meter infrastructure (Projects -> Customers -> Buildings -> Places -> Meters) and automating meter readings via image processing.
+**Automated Hierarchical Meter Infrastructure & AI-Powered Reading Platform**
 
-## 🚀 Features
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
+[![OCR Ensemble](https://img.shields.io/badge/OCR-Ensemble-green)](https://github.com/tesseract-ocr/tesseract)
+[![Gemini AI](https://img.shields.io/badge/Gemini-1.5%20Flash-violet?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 
-- **Hierarchical Data Management**: Organize meters by Project, Customer, Building, and Place.
-- **Image-Based Readings**: Upload meter photos to automatically improved readings.
-- **REST API**: Fully documented FastAPI backend.
-- **Multi-Model OCR**: Ensemble of Tesseract, EasyOCR, and **Google Gemini 3 Flash** for high-accuracy readings.
+MeterVision is a robust, end-to-end solution designed to manage complex meter infrastructures and automate the process of collecting readings through advanced computer vision. Whether you're managing industrial parks, residential buildings, or utility networks, MeterVision provides the tools to organize, monitor, and scale your operations.
 
-## 🛠️ Project Structure
+---
 
-```
-MeterReading/
-├── app/
-│   ├── main.py            # FastAPI Application & Endpoints
-│   ├── models.py          # SQLModel Database Schema
-│   ├── database.py        # Database Connection Config
-│   └── services/
-│       └── ocr.py         # OCR Logic Abstraction
-├── uploads/               # Storage for uploaded meter images
-├── verify_setup.py        # End-to-end verification script
-├── requirements.txt       # Python dependencies
-└── README.md
-```
+## ✨ Key Features
 
-## 📋 Prerequisites
+### 🏢 Hierarchical Asset Management
+Organize your infrastructure with a flexible, five-layer hierarchy:
+*   **Projects**: Top-level containers for large-scale operations.
+*   **Customers**: Manage clients or tenants individually.
+*   **Buildings**: Physical assets associated with customers.
+*   **Places**: Specific locations within buildings (e.g., "Basement", "Kitchen").
+*   **Meters**: The leaf nodes supporting various types (Electricity, Gas, Heat).
 
-- **Python 3.10+**
-- **pip** (Python package manager)
-- **Git**
+### 🤖 Intelligent OCR Ensemble
+MeterVision doesn't rely on a single model. It uses a sophisticated **voting ensemble** to ensure maximum accuracy:
+1.  **Google Gemini 1.5 Flash**: State-of-the-art vision-language model for complex environments.
+2.  **EasyOCR**: Deep learning-based OCR for high-accuracy text extraction.
+3.  **Tesseract OCR**: The industry standard for reliable text processing.
+*Includes a calibration system that uses expected values to improve confidence.*
+
+### 🎨 Modern Dashboard
+*   **Card-Based Interface**: Elegant, dark-mode-ready design using the Outfit typeface.
+*   **Real-Time Status**: Instant overview of active meters and monitoring status.
+*   **Mobile Friendly**: Designed for field technicians to upload readings directly from their devices.
+
+---
+
+## 🛠️ Tech Stack
+
+*   **Backend**: FastAPI, SQLModel (SQLAlchemy + Pydantic)
+*   **Database**: SQLite (default), extensible to PostgreSQL
+*   **OCR Engine**: Tesseract, EasyOCR, Google Generative AI (Gemini)
+*   **Frontend**: Vanilla JavaScript + Modern CSS (no heavy frameworks required)
+*   **Icons**: Phosphor Icons
+
+---
 
 ## ⚡ Quick Start
 
-### 1. Clone the Repository
+### 1. Prerequisites
+*   Python 3.10+
+*   Tesseract OCR installed on your system (`sudo apt install tesseract-ocr`)
+
+### 2. Installation
 ```bash
 git clone https://github.com/bejranonda/MeterVision.git
 cd MeterVision
-```
-
-### 2. Set Up Virtual Environment
-It is recommended to use a virtual environment to manage dependencies.
-```bash
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3. Install Dependencies
-```bash
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3.1. Configure Environment Variables
-Create a `.env.local` file in the root directory and add your Google Gemini API Key:
-```
-GEMINI_API_KEY=your_api_key_here
+### 3. Configuration
+Create a `.env.local` file in the root directory:
+```env
+GEMINI_API_KEY=your_gemini_api_key
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=securepassword123
 ```
 
-### 4. Run the Server
-Start the development server using Uvicorn.
+### 4. Run it
 ```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+uvicorn app.main:app --reload
 ```
-The API will be available at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Visit `http://localhost:8000` for the dashboard and `http://localhost:8000/docs` for the API documentation.
 
 ---
 
-## 📖 API Documentation
-
-The project includes interactive API documentation generated by Swagger UI.
-
-1.  Start the server.
-2.  Navigate to **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)** in your browser.
-3.  You can explore all endpoints (Projects, Customers, Buildings, Places, Meters) and execute requests directly from the browser.
-
-### Key Endpoints
-
-- **Setup Hierarchy**:
-    - `POST /projects/`
-    - `POST /customers/`
-    - `POST /buildings/`
-    - `POST /places/`
-    - `POST /meters/`
-- **Operate**:
-    - `POST /meters/{serial_number}/reading`: Upload an image file to trigger the reading process.
-
----
-
-## ✅ Verification
-
-A verification script is included to test the full flow of the system.
-
+## 🧪 Verification & Testing
+Ensure everything is running correctly with our automated script:
 ```bash
 python verify_setup.py
 ```
-This script will:
-1.  Create a test Project, Customer, Building, and Place.
-2.  Register a test Meter.
-3.  Simulate an image upload and verify the reading result.
+This script validates the entire pipeline from hierarchy creation to OCR reading processing.
 
-## 🏗️ Architecture
-
-The platform uses **SQLModel** (combining SQLAlchemy and Pydantic) for ORM and Data Validation.
-- **Database**: defaults to SQLite (`meter_reading.db`) for development. Can be easily switched to PostgreSQL for production.
-- **OCR Service**: Located in `app/services/ocr.py`. Currently uses a `MockMeterReader` for demonstration. detailed implementation can be added to `BasicMeterReader` or by integrating cloud vision APIs.
+---
 
 ## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-1.  Fork the repository.
-2.  Create a feature branch (`git checkout -b feature/NewFeature`).
-3.  Commit your changes.
-4.  Push to the branch.
-5.  Open a Pull Request.
+---
+
+## ⚖️ License
+This project is licensed under the MIT License - see the LICENSE file for details.
