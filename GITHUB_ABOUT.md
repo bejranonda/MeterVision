@@ -1,7 +1,7 @@
 # GitHub Project Description
 
 **Description:**
-🚀 Automated Hierarchical Meter Infrastructure management platform. Features an AI-powered OCR ensemble (Gemini 1.5 Flash, EasyOCR, Tesseract) to automate meter readings from photos. Modern FastAPI backend + Card-based Dashboard.
+👁️ MeterVision: Automated Hierarchical Meter Infrastructure management with AI OCR Ensemble (Gemini 3 Flash, EasyOCR, Tesseract). Efficient monitoring for industrial & utility assets.
 
 **Suggested Tags/Topics:**
 - fast-api
