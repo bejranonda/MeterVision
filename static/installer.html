@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MeterVision Installer</title>
+    <link rel="stylesheet" href="installer.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
+</head>
+<body class="installer-mode">
+    <!-- App Container -->
+    <div id="app" class="installer-app">
+        
+        <!-- Header -->
+        <header class="installer-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <i class="ph ph-camera"></i>
+                    <span class="app-title">MeterVision Installer</span>
+                </div>
+                <div class="header-right">
+                    <span id="username-display" class="username"></span>
+                    <button id="logout-btn" class="btn-icon" title="Logout">
+                        <i class="ph ph-sign-out"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content" class="installer-main">
+
+            <!-- Login Screen -->
+            <div id="login-screen" class="screen active">
+                <div class="login-container">
+                    <div class="login-card">
+                        <div class="login-icon">
+                            <i class="ph ph-hard-drives"></i>
+                        </div>
+                        <h1>Installer Login</h1>
+                        <p class="subtitle">Enter your credentials to continue</p>
+                        
+                        <form id="login-form">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="ph ph-sign-in"></i>
+                                <span>Login</span>
+                            </button>
+                        </form>
+                        <div id="login-error" class="error-message"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organization Selection Screen -->
+            <div id="org-selection-screen" class="screen">
+                <div class="screen-header">
+                    <h2>Select Organization</h2>
+                    <p>Choose the organization for this installation</p>
+                </div>
+                <div id="org-list" class="org-list">
+                    <!-- Organizations will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Installation Wizard -->
+            <div id="wizard-screen" class="screen">
+                
+                <!-- Step Indicator -->
+                <div class="wizard-steps">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Scan Camera</div>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Meter Info</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Validate</div>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-label">Complete</div>
+                    </div>
+                </div>
+
+                <!-- Step 1: QR Code Scanner -->
+                <div id="step-scan" class="wizard-step active">
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="ph ph-qr-code"></i>
+                        </div>
+                        <h2>Scan Camera QR Code</h2>
+                        <p>Point your camera at the QR code on the device</p>
+                        
+                        <div id="qr-reader" class="qr-reader"></div>
+                        
+                        <div class="manual-input">
+                            <p class="or-divider">or enter manually</p>
+                            <input type="text" id="manual-serial" placeholder="Camera Serial Number" class="input-large">
+                            <button id="manual-submit-btn" class="btn btn-secondary">
+                                <i class="ph ph-check"></i>
+                                <span>Continue</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Meter Information -->
+                <div id="step-meter" class="wizard-step">
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="ph ph-gauge"></i>
+                        </div>
+                        <h2>Meter Information</h2>
+                        <p>Enter meter details for this installation</p>
+                        
+                        <form id="meter-form" class="form-vertical">
+                            <div class="form-group">
+                                <label for="meter-serial">Meter Serial Number *</label>
+                                <input type="text" id="meter-serial" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="meter-type">Meter Type *</label>
+                                <select id="meter-type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="Electricity">Electricity</option>
+                                    <option value="Gas">Gas</option>
+                                    <option value="Heat">Heat</option>
+                                    <option value="Water">Water</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="meter-unit">Unit *</label>
+                                <select id="meter-unit" required>
+                                    <option value="">Select unit...</option>
+                                    <option value="kWh">kWh (Kilowatt-hour)</option>
+                                    <option value="m3">m³ (Cubic meter)</option>
+                                    <option value="L">L (Liters)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="meter-location">Location Description</label>
+                                <input type="text" id="meter-location" placeholder="e.g., Basement, Room 101">
+                            </div>
+
+                            <div class="button-group">
+                                <button type="button" class="btn btn-secondary" id="meter-back-btn">
+                                    <i class="ph ph-arrow-left"></i>
+                                    <span>Back</span>
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ph ph-arrow-right"></i>
+                                    <span>Continue</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Step 3: Validation -->
+                <div id="step-validate" class="wizard-step">
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="ph ph-check-circle"></i>
+                        </div>
+                        <h2>Validation Checks</h2>
+                        <p>Running installation validation tests...</p>
+                        
+                        <div class="validation-list">
+                            <div class="validation-item" data-check="connection">
+                                <div class="validation-icon">
+                                    <i class="ph ph-circle-notch spinner"></i>
+                                </div>
+                                <div class="validation-content">
+                                    <h3>Connection Test</h3>
+                                    <p class="validation-status">Checking camera connectivity...</p>
+                                </div>
+                            </div>
+
+                            <div class="validation-item" data-check="fov">
+                                <div class="validation-icon">
+                                    <i class="ph ph-circle-notch"></i>
+                                </div>
+                                <div class="validation-content">
+                                    <h3>Field of View</h3>
+                                    <p class="validation-status">Waiting...</p>
+                                </div>
+                            </div>
+
+                            <div class="validation-item" data-check="glare">
+                                <div class="validation-icon">
+                                    <i class="ph ph-circle-notch"></i>
+                                </div>
+                                <div class="validation-content">
+                                    <h3>Glare Detection</h3>
+                                    <p class="validation-status">Waiting...</p>
+                                </div>
+                            </div>
+
+                            <div class="validation-item" data-check="ocr">
+                                <div class="validation-icon">
+                                    <i class="ph ph-circle-notch"></i>
+                                </div>
+                                <div class="validation-content">
+                                    <h3>Initial Reading</h3>
+                                    <p class="validation-status">Wait...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="validation-result" class="validation-result" style="display: none;">
+                            <!-- Results will be shown here -->
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn btn-secondary" id="validate-back-btn">
+                                <i class="ph ph-arrow-left"></i>
+                                <span>Back</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" id="validate-continue-btn" disabled>
+                                <i class="ph ph-arrow-right"></i>
+                                <span>Continue</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Complete -->
+                <div id="step-complete" class="wizard-step">
+                    <div class="step-content">
+                        <div class="success-icon">
+                            <i class="ph ph-check-circle"></i>
+                        </div>
+                        <h2>Installation Complete!</h2>
+                        <p>The camera has been successfully installed and validated.</p>
+                        
+                        <div class="installation-summary">
+                            <h3>Installation Summary</h3>
+                            <dl class="summary-list">
+                                <dt>Camera Serial</dt>
+                                <dd id="summary-camera-serial">-</dd>
+                                <dt>Meter Serial</dt>
+                                <dd id="summary-meter-serial">-</dd>
+                                <dt>Meter Type</dt>
+                                <dd id="summary-meter-type">-</dd>
+                                <dt>Location</dt>
+                                <dd id="summary-location">-</dd>
+                                <dt>Status</dt>
+                                <dd class="status-active">Active</dd>
+                            </dl>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-block" id="new-installation-btn">
+                            <i class="ph ph-plus-circle"></i>
+                            <span>New Installation</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <!-- Installer App Script -->
+    <script src="installer.js"></script>
+
+</body>
+</html>

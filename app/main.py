@@ -98,6 +98,11 @@ app.mount("/static", StaticFiles(directory="/home/ogema/MeterReading/static"), n
 async def read_index():
     return FileResponse("/home/ogema/MeterReading/static/index.html")
 
+@app.get("/installer")
+async def read_installer():
+    """Serve the installer interface."""
+    return FileResponse("/home/ogema/MeterReading/static/installer.html")
+
 # --- Auth ---
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
