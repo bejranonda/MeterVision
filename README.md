@@ -5,7 +5,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
 [![OCR Ensemble](https://img.shields.io/badge/OCR-Ensemble-green)](https://github.com/tesseract-ocr/tesseract)
-[![Gemini AI](https://img.shields.io/badge/Gemini-3%20Flash-violet?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+[![Gemini AI](https://img.shields.io/badge/Gemini-1.5%20&%202.0%20Flash-violet?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 
 MeterVision is a robust, end-to-end solution designed to manage complex meter infrastructures and automate the process of collecting readings through advanced computer vision. Whether you're managing industrial parks, residential buildings, or utility networks, MeterVision provides the tools to organize, monitor, and scale your operations.
 
@@ -23,7 +23,7 @@ Organize your infrastructure with a flexible, five-layer hierarchy:
 
 ### 🤖 Intelligent OCR Ensemble
 MeterVision doesn't rely on a single model. It uses a sophisticated **voting ensemble** to ensure maximum accuracy:
-1.  **Google Gemini 3 Flash**: State-of-the-art vision-language model for complex environments.
+1.  **Google Gemini 1.5 & 2.0 Flash**: State-of-the-art vision-language models for complex environments, now working in tandem.
 2.  **EasyOCR**: Deep learning-based OCR for high-accuracy text extraction.
 3.  **Tesseract OCR**: The industry standard for reliable text processing.
 *Includes a calibration system that uses expected values to improve confidence.*

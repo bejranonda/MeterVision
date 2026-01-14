@@ -89,16 +89,20 @@ class EasyOCRMeterReader(MeterReader):
 import google.generativeai as genai
 
 class GeminiMeterReader(MeterReader):
-    def __init__(self):
+    def __init__(self, model_name="gemini-1.5-flash-latest"):
         self.api_key = os.getenv("GEMINI_API_KEY")
+        self.model_name = os.getenv("GEMINI_MODEL_VERSION", model_name)
+
         if not self.api_key:
             print("Warning: GEMINI_API_KEY not found in environment variables.")
+            self.model = None
         else:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-3-flash-preview')
+            print(f"Initializing GeminiMeterReader with model: {self.model_name}")
+            self.model = genai.GenerativeModel(self.model_name)
 
     def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
-        if not self.api_key:
+        if not self.model:
              return 0.0
         
         try:
@@ -119,44 +123,57 @@ class GeminiMeterReader(MeterReader):
             
             return float(cleaned_text)
         except Exception as e:
-            print(f"Error processing image with Gemini: {e}")
+            print(f"Error processing image with Gemini ({self.model_name}): {e}")
             return 0.0
 
 class SmartMeterReader(MeterReader):
     def __init__(self):
         self.tesseract = TesseractMeterReader()
         self.easyocr = EasyOCRMeterReader()
-        self.gemini = GeminiMeterReader()
+        self.gemini_1_5 = GeminiMeterReader(model_name="gemini-1.5-flash-latest")
+        self.gemini_2_0 = GeminiMeterReader(model_name="gemini-2.0-flash-exp")
 
     def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
         val_easy = self.easyocr.read_meter(image_path, expected_value)
         val_tess = self.tesseract.read_meter(image_path, expected_value)
-        val_gemini = self.gemini.read_meter(image_path, expected_value)
+        val_gemini_1_5 = self.gemini_1_5.read_meter(image_path, expected_value)
+        val_gemini_2_0 = self.gemini_2_0.read_meter(image_path, expected_value)
+
         
-        print(f"OCR Results - Tesseract: {val_tess}, EasyOCR: {val_easy}, Gemini: {val_gemini}")
+        print(f"OCR Results - Tesseract: {val_tess}, EasyOCR: {val_easy}, Gemini 1.5: {val_gemini_1_5}, Gemini 2.0: {val_gemini_2_0}")
         
         # If expected value was matched by any, verify and return it
         if expected_value:
             try:
                 exp_float = float(expected_value.replace(",", "."))
-                if exp_float > 0 and (val_easy == exp_float or val_tess == exp_float or val_gemini == exp_float):
+                results = [val_easy, val_tess, val_gemini_1_5, val_gemini_2_0]
+                if exp_float > 0 and exp_float in results:
                     return exp_float
             except:
                 pass
 
         # Voting / Consensus Logic
-        # 1. If Gemini is confident (returns > 0) and matches one of the others, trust it
-        if val_gemini > 0:
-            if val_gemini == val_easy or val_gemini == val_tess:
-                 return val_gemini
-            # 2. If Gemini is distinct but others differ, Gemini might be smarter. 
-            # However, safety first: if others agree, trust them.
-            if val_easy == val_tess and val_easy > 0:
-                return val_easy
-            
-            # 3. If no consensus, trust Gemini as the "smartest" model if it found something
-            return val_gemini
+        # 1. If Gemini models agree, trust them
+        if val_gemini_1_5 == val_gemini_2_0 and val_gemini_1_5 > 0:
+            return val_gemini_1_5
 
+        # 2. If a Gemini model agrees with a local OCR, that's a strong signal
+        if val_gemini_2_0 > 0 and (val_gemini_2_0 == val_easy or val_gemini_2_0 == val_tess):
+            return val_gemini_2_0
+        if val_gemini_1_5 > 0 and (val_gemini_1_5 == val_easy or val_gemini_1_5 == val_tess):
+            return val_gemini_1_5
+
+        # 3. If local OCRs agree, trust them
+        if val_easy == val_tess and val_easy > 0:
+            return val_easy
+        
+        # 4. If no consensus, trust the "smartest" model that returned a value. Prioritize 2.0.
+        if val_gemini_2_0 > 0:
+            return val_gemini_2_0
+        if val_gemini_1_5 > 0:
+            return val_gemini_1_5
+
+        # 5. Fallback to local models if Gemini failed
         if val_easy > 0:
             return val_easy
         elif val_tess > 0:

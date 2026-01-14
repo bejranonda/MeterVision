@@ -83,18 +83,62 @@ If for some reason Google Cloud Vision AI is not suitable, **OCR.space** is a go
 
 Based on the project structure (Python/Web App) and the requirement for a "free tier", here are the top 3 selections:
 
-### 1. Google Cloud Vision AI
+### 1. Gemini 2.0 Flash (Multimodal AI)
+*   **Best For:** Intelligence, reasoning, and complex meter interpretation.
+*   **Why:** Gemini 2.0 Flash provides a massive improvement in speed and reasoning while maintaining a generous free tier. It can "see" the image and answer questions like "What is the reading on this analog dial?"
+*   **Free Tier:** Extremely generous. The Gemini API free tier for 2.0 Flash is designed for developers.
+*   **Integration:** Uses the `google-generativeai` Python library.
+
+### 2. Google Cloud Vision AI
 *   **Best For:** Reliability, accuracy, and professional-grade features.
 *   **Why:** It has a robust Python client library (`google-cloud-vision`) which fits perfectly with your `app/` structure. The 1,000 monthly free requests are sufficient for testing and small-scale usage. Its text detection is superior for various lighting conditions often found in meter photography.
 
-### 2. OCR.space
+### 3. OCR.space
 *   **Best For:** Rapid prototyping and ease of use.
 *   **Why:** No complicated setup (OAuth, service accounts) is required—just a simple API key. The 500 daily request limit is excellent for development. It supports a special "Engine 2" optimized for numbers, which is ideal for meter reading.
-
-### 3. Nanonets
-*   **Best For:** Difficult or non-standard meters.
-*   **Why:** If standard OCR fails to read the specific dial or digital display of your meters, Nanonets allows you to upload images and *train* a model to recognize your specific meter type. This is the "power user" option.
 
 ### Bonus: Open Source / Local (Completely Free)
 *   **Tesseract (via `pytesseract`)** or **EasyOCR**
 *   **Why:** These run locally on your machine/server. They are free forever with no limits. However, they require installing system dependencies (like the Tesseract binary) and may require more image pre-processing (cropping, thresholding) to achieve the same accuracy as cloud APIs.
+
+## Gemini 1.5 vs 2.0 Flash Integration & Validation Plan
+
+To ensure the robustness of the "OCR Ensemble," we will integrate both Gemini 1.5 Flash and Gemini 2.0 Flash. The goal is to leverage the strengths of both models and validate their performance.
+
+### Research Goals
+1.  **Prove** that both models can be integrated simultaneously.
+2.  **Validate** that Gemini 2.0 Flash offers improvements (speed/accuracy) over 1.5 Flash.
+3.  **Test** the ensemble logic to ensure it correctly handles conflicting readings between the two AI models and local OCR.
+
+### Validation Phases
+
+#### Phase 1: Functional Integration
+*   **Objective:** Successfully instantiate and call both models within `SmartMeterReader`.
+*   **Tasks:**
+    *   Refactor `GeminiMeterReader` to accept model names dynamically.
+    *   Update `SmartMeterReader` to hold instances for `gemini-1.5-flash` and `gemini-2.0-flash-exp` (or stable if available).
+    *   Ensure API keys work for both models.
+
+#### Phase 2: Accuracy Comparison
+*   **Objective:** Determine which model is more accurate for meter reading tasks.
+*   **Tasks:**
+    *   Run both models against a set of test images (analog, digital, blurry).
+    *   Log the raw output (text) and the parsed numeric value.
+    *   Compare against ground truth (manual reading).
+
+#### Phase 3: Latency & Cost Analysis
+*   **Objective:** Measure the response time for each model.
+*   **Tasks:**
+    *   Instrument the code to log the time taken for each API call.
+    *   Determine if the speed gain of 2.0 Flash warrants giving it higher voting weight or using it as the primary fallback.
+
+#### Phase 4: Ensemble Tuning
+*   **Objective:** Optimize the voting logic.
+*   **Tasks:**
+    *   Define rules for disagreement (e.g., if 1.5 and 2.0 disagree, does EasyOCR break the tie? Or do we trust 2.0?).
+    *   Implement a weighted voting system if necessary.
+
+### Testing Strategy
+1.  **Unit Test:** Create a script to run just the Gemini readers on `test_image.jpg`.
+2.  **Integration Test:** Run `verify_ocr.py` to see the full ensemble in action.
+3.  **Edge Case Test:** Test with no internet (graceful failure) or invalid API keys.

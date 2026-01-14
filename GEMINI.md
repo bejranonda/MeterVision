@@ -6,7 +6,7 @@ MeterVision is a robust, end-to-end solution designed to manage complex meter in
 ### Key Technologies
 - **Backend:** Python 3.10+, FastAPI, SQLModel (SQLAlchemy + Pydantic)
 - **Database:** SQLite (default: `meter_reading.db`), extensible to PostgreSQL.
-- **AI/OCR:** Google Gemini 3 Flash, EasyOCR, Tesseract OCR.
+- **AI/OCR:** Google Gemini 1.5 & 2.0 Flash, EasyOCR, Tesseract OCR.
 - **Frontend:** Vanilla JavaScript, HTML5, CSS3, Phosphor Icons (no build step required).
 - **Authentication:** OAuth2 with Password Flow (JWT).
 
@@ -77,7 +77,7 @@ python verify_setup.py
 
 ### Backend
 - **Dependency Injection:** Uses `Depends(get_session)` for database access and `Depends(get_current_user)` for protected routes.
-- **OCR Logic:** The `SmartMeterReader` class in `app/services/ocr.py` implements a voting system. It prioritizes Gemini for complex tasks but falls back to or corroborates with EasyOCR and Tesseract.
+- **OCR Logic:** The `SmartMeterReader` class in `app/services/ocr.py` implements a voting system. It now uses Gemini 1.5 Flash and 2.0 Flash, prioritizing their agreement or corroborating their results with EasyOCR and Tesseract to achieve the highest accuracy.
 - **File Handling:** Uploads are saved to the `uploads/` directory. **Note:** Ensure paths are handled relatively using `os.path` to avoid OS-specific hardcoding issues.
 
 ### Frontend
