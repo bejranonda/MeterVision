@@ -31,13 +31,17 @@ from .auth import (
     verify_password,
     get_password_hash
 )
+from .routers import organizations
 import os
 import uuid
 from dotenv import load_dotenv
 
 load_dotenv(".env.local")
 
-app = FastAPI(title="Meter Reading App")
+app = FastAPI(title="MeterVision Enterprise API")
+
+# Include routers
+app.include_router(organizations.router)
 
 # Create uploads directory if not exists
 os.makedirs("uploads", exist_ok=True)
@@ -113,7 +117,20 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 # --- Projects ---
 @app.post("/projects/", response_model=Project)
 def create_project(project: ProjectBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    db_project = Project.from_orm(project)
+    """Create a new project within an organization."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    # Verify user has access to the organization
+    user_role = RBACService.get_user_role_in_org(current_user.id, project.organization_id, session)
+    
+    if not user_role and current_user.platform_role not in [UserRoleEnum.SUPER_ADMIN.value, UserRoleEnum.PLATFORM_MANAGER.value]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this organization"
+        )
+    
+    db_project = Project.model_validate(project)
     session.add(db_project)
     session.commit()
     session.refresh(db_project)
@@ -121,8 +138,23 @@ def create_project(project: ProjectBase, session: Session = Depends(get_session)
 
 @app.get("/projects/", response_model=List[Project])
 def read_projects(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    projects = session.exec(select(Project)).all()
-    return projects
+    """Get all projects accessible to the current user."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    # Super admin sees all projects
+    if current_user.platform_role == UserRoleEnum.SUPER_ADMIN.value:
+        return list(session.exec(select(Project)).all())
+    
+    # Get user's organizations
+    user_orgs = RBACService.get_user_organizations(current_user, session)
+    org_ids = [org.id for org in user_orgs]
+    
+    if not org_ids:
+        return []
+    
+    projects = session.exec(select(Project).where(Project.organization_id.in_(org_ids))).all()
+    return list(projects)
 
 # --- Customers ---
 @app.post("/customers/", response_model=Customer)
@@ -166,7 +198,20 @@ def read_places(session: Session = Depends(get_session), current_user: User = De
 # --- Meters ---
 @app.post("/meters/", response_model=Meter)
 def create_meter(meter: MeterBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    db_meter = Meter.from_orm(meter)
+    """Create a new meter within an organization."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    # Verify user has access to the organization
+    user_role = RBACService.get_user_role_in_org(current_user.id, meter.organization_id, session)
+    
+    if not user_role and current_user.platform_role not in [UserRoleEnum.SUPER_ADMIN.value, UserRoleEnum.PLATFORM_MANAGER.value]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this organization"
+        )
+    
+    db_meter = Meter.model_validate(meter)
     session.add(db_meter)
     session.commit()
     session.refresh(db_meter)
@@ -174,13 +219,47 @@ def create_meter(meter: MeterBase, session: Session = Depends(get_session), curr
 
 @app.get("/meters_list/", response_model=List[Meter])
 def read_all_meters(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return session.exec(select(Meter)).all()
+    """Get all meters accessible to the current user."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    # Super admin sees all meters
+    if current_user.platform_role == UserRoleEnum.SUPER_ADMIN.value:
+        return list(session.exec(select(Meter)).all())
+    
+    # Get user's organizations
+    user_orgs = RBACService.get_user_organizations(current_user, session)
+    org_ids = [org.id for org in user_orgs]
+    
+    if not org_ids:
+        return []
+    
+    meters = session.exec(select(Meter).where(Meter.organization_id.in_(org_ids))).all()
+    return list(meters)
 
 @app.get("/meters/{serial_number}", response_model=Meter)
 def read_meter_by_serial(serial_number: str, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    """Get a meter by serial number (must belong to user's organization)."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
     meter = session.exec(select(Meter).where(Meter.serial_number == serial_number)).first()
     if not meter:
         raise HTTPException(status_code=404, detail="Meter not found")
+    
+    # Check if user has access to this meter's organization
+    if current_user.platform_role == UserRoleEnum.SUPER_ADMIN.value:
+        return meter
+    
+    user_orgs = RBACService.get_user_organizations(current_user, session)
+    org_ids = [org.id for org in user_orgs]
+    
+    if meter.organization_id not in org_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this meter's organization"
+        )
+    
     return meter
 
 # --- Readings ---
@@ -192,10 +271,25 @@ async def upload_reading(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Verify Meter Exists
+    """Upload a meter reading with OCR processing."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    # 1. Verify Meter Exists and user has access
     meter = session.exec(select(Meter).where(Meter.serial_number == serial_number)).first()
     if not meter:
         raise HTTPException(status_code=404, detail="Meter not found")
+    
+    # Check organization access
+    if current_user.platform_role != UserRoleEnum.SUPER_ADMIN.value:
+        user_orgs = RBACService.get_user_organizations(current_user, session)
+        org_ids = [org.id for org in user_orgs]
+        
+        if meter.organization_id not in org_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this meter's organization"
+            )
     
     # 2. Save Image
     file_ext = file.filename.split(".")[-1]
@@ -208,12 +302,13 @@ async def upload_reading(
     reader = SmartMeterReader()
     reading_value = reader.read_meter(file_path, expected_value)
     
-    # 4. Save Reading
+    # 4. Save Reading (with organization_id)
     reading = Reading(
         value=reading_value,
         raw_image_path=file_path,
         meter_id=meter.id,
-        status="Verified", # Mock is always right?
+        organization_id=meter.organization_id,  # Set from meter's organization
+        status="Verified",
         ocr_confidence=1.0
     )
     session.add(reading)
