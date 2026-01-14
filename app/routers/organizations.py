@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from ..database import get_session
 from ..models import (
-    Organization, OrganizationBase,
+    Organization, OrganizationBase, OrganizationRead,
     User, UserRoleEnum, UserOrganizationRole, UserOrganizationRoleBase
 )
 from ..middleware import require_super_admin, require_platform_manager, get_current_user_org_context
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/organizations", tags=["organizations"])
 
 # --- Organization CRUD ---
 
-@router.post("/", response_model=Organization)
+@router.post("/", response_model=OrganizationRead)
 def create_organization(
     org_data: OrganizationBase,
     session: Session = Depends(get_session),
@@ -31,7 +31,7 @@ def create_organization(
     )
 
 
-@router.get("/", response_model=List[Organization])
+@router.get("/", response_model=List[OrganizationRead])
 def list_organizations(
     session: Session = Depends(get_session),
     current_user: User = Depends(require_platform_manager)
@@ -41,7 +41,7 @@ def list_organizations(
     return list(session.exec(select(Organization).where(Organization.is_active == True)).all())
 
 
-@router.get("/my-organizations", response_model=List[Organization])
+@router.get("/my-organizations", response_model=List[OrganizationRead])
 def get_my_organizations(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
@@ -50,7 +50,7 @@ def get_my_organizations(
     return RBACService.get_user_organizations(current_user, session)
 
 
-@router.get("/{organization_id}", response_model=Organization)
+@router.get("/{organization_id}", response_model=OrganizationRead)
 async def get_organization(
     organization_id: int,
     session: Session = Depends(get_session),

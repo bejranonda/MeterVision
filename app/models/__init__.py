@@ -1,6 +1,6 @@
 # Models package - Multi-tenant enterprise architecture
 from .base import TimestampMixin, SoftDeleteMixin
-from .tenant import Organization, OrganizationSettings, OrganizationBase, OrganizationSettingsBase
+from .tenant import Organization, OrganizationRead, OrganizationSettings, OrganizationBase, OrganizationSettingsBase
 from .user_rbac import User, UserRoleEnum, UserOrganizationRole, UserBase, UserOrganizationRoleBase
 from .device import Camera, CameraHeartbeat, CameraStatusEnum, CameraBase, CameraHeartbeatBase
 from .installation import (
@@ -20,6 +20,7 @@ __all__ = [
     "SoftDeleteMixin",
     # Tenant models
     "Organization",
+    "OrganizationRead",
     "OrganizationSettings",
     "OrganizationBase",
     "OrganizationSettingsBase",

@@ -11,3 +11,6 @@ Pillow
 easyocr
 opencv-python-headless
 google-generativeai
+pytest
+pytest-asyncio
+httpx

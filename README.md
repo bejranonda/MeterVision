@@ -95,9 +95,17 @@ uvicorn app.main:app --reload
 
 Visit:
 - **Dashboard**: `http://localhost:8000`
+- **Installer App**: `http://localhost:8000/installer`
 - **API Docs**: `http://localhost:8000/docs`
 
 On first startup, a Super Admin user is auto-created with credentials from `.env.local`.
+
+### 5. Verification
+Verify the installation and multi-tenant setup:
+```bash
+python verify_setup.py         # Verify DB schema and OCR pipeline
+python verify_installation.py  # Simulate end-to-end installation workflow
+```
 
 ---
 

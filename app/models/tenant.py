@@ -34,6 +34,11 @@ class Organization(OrganizationBase, TimestampMixin, SoftDeleteMixin, table=True
     cameras: List["Camera"] = Relationship(back_populates="organization")
 
 
+class OrganizationRead(OrganizationBase, TimestampMixin):
+    """Organization response model without relationships."""
+    id: int
+
+
 class OrganizationSettingsBase(SQLModel):
     """Base settings attributes."""
     organization_id: int = Field(foreign_key="organization.id")

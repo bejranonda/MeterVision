@@ -231,20 +231,22 @@ POST   /api/cameras/heartbeat                # Camera heartbeat webhook
 - RBAC service layer (`RBACService`, `OrganizationService`)
 - Super Admin auto-creation on startup
 
-### 🔄 Phase 3: Installer Frontend (Planned)
-- Mobile-first installer interface
+### ✅ Phase 3: Installer Frontend (Complete)
+- Mobile-first installer interface (`static/installer.html`)
 - QR code scanner integration
-- Installation wizard UI
+- Installation wizard UI with validation feedback
+- API integration for complete workflow
 
-### 🔄 Phase 4: Validation Backend (Planned)
-- Camera service (heartbeat, test image capture)
-- Validation service (FOV, glare, OCR)
-- Installation workflow orchestration
+### ✅ Phase 4: Validation Backend (Complete)
+- Camera service (status tracking, simulated heartbeat)
+- Validation service (FOV, glare, OCR - simulated integration ready)
+- Installation workflow orchestration (start -> validate -> complete)
+- Installation API endpoints with RBAC
 
-### 🔄 Phase 5: Testing & Documentation (Planned)
-- Comprehensive unit/integration tests
-- Architecture documentation
-- Migration guides
+### 🔄 Phase 5: Testing & Documentation (In Progress)
+- Created verification scripts (`verify_setup.py`, `verify_installation.py`)
+- Comprehensive architecture documentation
+- Unit tests pattern established (and verified)
 
 ## Migration Notes
 
