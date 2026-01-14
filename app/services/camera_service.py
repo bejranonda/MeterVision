@@ -222,4 +222,4 @@ class CameraService:
         """
         # TODO: Implement actual camera API integration
         # For now, return a placeholder
-        return f"/tmp/camera_{serial_number}_test.jpg"
+        return f"uploads/test_capture_{serial_number}.jpg"

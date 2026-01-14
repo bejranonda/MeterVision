@@ -53,7 +53,6 @@ class ImageValidationService:
         """
         # TODO: Implement actual FOV detection
         # For now, simulate successful validation
-        
         if not os.path.exists(image_path):
             return ValidationResult(
                 passed=False,
