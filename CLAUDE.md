@@ -1,4 +1,4 @@
-# MeterVision Enterprise Context for Gemini
+# MeterVision Enterprise Context for Claude
 
 ## Project Overview
 MeterVision is a comprehensive B2B SaaS platform for offering "Meter Reading as a Service" to multiple organizations. It features multi-tenant architecture, role-based access control (RBAC), AI-powered OCR ensemble, and camera-based installation workflows with validation.

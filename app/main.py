@@ -7,13 +7,21 @@ from typing import List, Optional
 from datetime import timedelta
 from .database import create_db_and_tables, get_session
 from .models import (
+    # Asset hierarchy
     Project, ProjectBase, 
     Customer, CustomerBase, 
     Building, BuildingBase, 
     Place, PlaceBase, 
     Meter, MeterBase, 
     Reading, ReadingBase,
-    User
+    # RBAC
+    User,
+    # Multi-tenant (imported for type hints, not used directly yet)
+    Organization,
+    UserOrganizationRole,
+    Camera,
+    InstallationSession,
+    ValidationCheck
 )
 from .services.ocr import SmartMeterReader, save_upload_file
 from .auth import (
@@ -40,20 +48,39 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
-    # Create or Update default user
+    
+    # Create default Super Admin user
     with next(get_session()) as session:
-        admin_user = os.getenv("ADMIN_USERNAME", "admin")
-        admin_pass = os.getenv("ADMIN_PASSWORD", "securepassword123")
-        hashed_pwd = get_password_hash(admin_pass)
+        admin_username = os.getenv("ADMIN_USERNAME", "admin")
+        admin_password = os.getenv("ADMIN_PASSWORD", "securepassword123")
+        admin_email = os.getenv("ADMIN_EMAIL", "admin@metervision.local")
+        hashed_pwd = get_password_hash(admin_password)
         
-        user = session.exec(select(User).where(User.username == admin_user)).first()
+        user = session.exec(select(User).where(User.username == admin_username)).first()
         if not user:
-            user = User(username=admin_user, hashed_password=hashed_pwd)
+            from .models import UserRoleEnum
+            user = User(
+                username=admin_username,
+                email=admin_email,
+                full_name="System Administrator",
+                hashed_password=hashed_pwd,
+                platform_role=UserRoleEnum.SUPER_ADMIN.value,
+                is_active=True
+            )
+            session.add(user)
+            session.commit()
+            print(f"✅ Created Super Admin user: {admin_username}")
         else:
+            # Update existing user
             user.hashed_password = hashed_pwd
-            
-        session.add(user)
-        session.commit()
+            user.email = admin_email
+            if not user.platform_role:
+                from .models import UserRoleEnum
+                user.platform_role = UserRoleEnum.SUPER_ADMIN.value
+            session.add(user)
+            session.commit()
+            print(f"✅ Updated Super Admin user: {admin_username}")
+
 
 # Dependency
 def get_db():
