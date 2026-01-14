@@ -215,20 +215,23 @@ MeterVision/
 - Organization management APIs
 - RBAC service layer
 
-### 🔄 Phase 3: Installer App Frontend (In Progress)
-- Mobile-first installer interface
+### ✅ Phase 3: Installer App Frontend (Complete)
+- Mobile-first installer interface (`static/installer.html`)
 - QR code scanner integration
 - Installation wizard with validation progress
+- Real-time API integration
 
-### 🔄 Phase 4: Validation Backend (Planned)
+### ✅ Phase 4: Validation Backend (Complete)
 - Camera heartbeat service
-- FOV and glare detection algorithms
-- Installation validation pipeline
+- FOV, Glare, and OCR validation services
+- Installation workflow orchestration logic
+- Dedicated validation API endpoints
 
-### 🔄 Phase 5: Testing & Documentation (Planned)
-- Comprehensive unit and integration tests
-- Architecture documentation
-- API reference guide
+### 🔄 Phase 5: Testing & Documentation (In Progress)
+- [Architecture & API Reference Guide](./reference/API.md)
+- [Business Rules & Workflows](./business/RULES.md)
+- Simulation and verification scripts
+- Unit and integration test suite expansion
 
 ---
 

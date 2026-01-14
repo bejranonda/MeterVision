@@ -17,7 +17,7 @@ from typing import Dict, Any
 # Configuration
 BASE_URL = "http://localhost:8000"
 ADMIN_USERNAME = "admin"  # Assuming admin is created by default
-ADMIN_PASSWORD = "securepassword123"
+ADMIN_PASSWORD = "NewSecure*+-Password2026!"
 
 def print_step(step: str):
     print(f"\n{'='*50}")
