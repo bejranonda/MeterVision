@@ -281,11 +281,32 @@ async function handleMeterForm(e) {
     installationData.meterUnit = document.getElementById('meter-unit').value;
     installationData.meterLocation = document.getElementById('meter-location').value || '';
 
-    // Move to validation step
-    goToStep(3);
+    // Start installation session via API
+    try {
+        const response = await apiCall('/api/installations/start', {
+            method: 'POST',
+            body: JSON.stringify({
+                camera_serial: installationData.cameraSerial,
+                meter_serial: installationData.meterSerial,
+                meter_type: installationData.meterType,
+                meter_unit: installationData.meterUnit,
+                meter_location: installationData.meterLocation,
+                organization_id: installationData.organizationId
+            })
+        });
 
-    // Start validation
-    await runValidation();
+        installationData.sessionId = response.session_id;
+
+        // Move to validation step
+        goToStep(3);
+
+        // Start validation automatically
+        await runValidation();
+
+    } catch (error) {
+        console.error('Failed to start installation:', error);
+        alert('Failed to start installation: ' + error.message);
+    }
 }
 
 // ====================
@@ -293,57 +314,60 @@ async function handleMeterForm(e) {
 // ====================
 
 async function runValidation() {
+    // Reset all checks to pending
     const checks = ['connection', 'fov', 'glare', 'ocr'];
 
-    for (const check of checks) {
-        await runValidationCheck(check);
-        await delay(1500);  // Delay between checks
-    }
+    // Call the backend validation API
+    try {
+        const response = await apiCall(`/api/installations/${installationData.sessionId}/validate`, {
+            method: 'POST'
+        });
 
-    // All checks complete
-    document.getElementById('validate-continue-btn').disabled = false;
+        const results = response.validation_results;
+
+        // Update UI based on real results
+        updateValidationUI('connection', results.connection);
+        await delay(500);
+
+        updateValidationUI('fov', results.fov);
+        await delay(500);
+
+        updateValidationUI('glare', results.glare);
+        await delay(500);
+
+        updateValidationUI('ocr', results.ocr);
+
+        // Enable continue button if all passed
+        const allPassed = results.connection.passed &&
+            results.fov.passed &&
+            results.glare.passed &&
+            results.ocr.passed;
+
+        document.getElementById('validate-continue-btn').disabled = !allPassed;
+
+    } catch (error) {
+        console.error('Validation failed:', error);
+        alert('Validation failed: ' + error.message);
+    }
 }
 
-async function runValidationCheck(checkType) {
+function updateValidationUI(checkType, result) {
     const item = document.querySelector(`.validation-item[data-check="${checkType}"]`);
     const icon = item.querySelector('.validation-icon i');
     const status = item.querySelector('.validation-status');
 
-    // Mark as pending
-    item.classList.add('pending');
-    icon.className = 'ph ph-circle-notch spinner';
+    // Remove pending state
+    item.classList.remove('pending');
 
-    // Simulate validation (in production, call actual API)
-    const result = await simulateValidation(checkType);
-
-    // Update UI based on result
     if (result.passed) {
-        item.classList.remove('pending');
         item.classList.add('passed');
         icon.className = 'ph ph-check-circle';
         status.textContent = result.message;
     } else {
-        item.classList.remove('pending');
         item.classList.add('failed');
         icon.className = 'ph ph-x-circle';
-        status.textContent = result.message;
+        status.textContent = result.message || 'Validation failed';
     }
-}
-
-async function simulateValidation(checkType) {
-    // In production, this would call the backend API
-    // For now, we simulate with delays and mock responses
-
-    await delay(2000);
-
-    const messages = {
-        connection: { passed: true, message: 'Camera connected successfully' },
-        fov: { passed: true, message: 'Meter fully visible in frame' },
-        glare: { passed: true, message: 'No glare detected, lighting good' },
-        ocr: { passed: true, message: 'Initial reading: 12345.67 kWh (confidence: 95%)' }
-    };
-
-    return messages[checkType];
 }
 
 // ====================

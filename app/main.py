@@ -31,7 +31,7 @@ from .auth import (
     verify_password,
     get_password_hash
 )
-from .routers import organizations
+from .routers import organizations, installation
 import os
 import uuid
 from dotenv import load_dotenv
@@ -42,6 +42,7 @@ app = FastAPI(title="MeterVision Enterprise API")
 
 # Include routers
 app.include_router(organizations.router)
+app.include_router(installation.router)
 
 # Create uploads directory if not exists
 os.makedirs("uploads", exist_ok=True)
