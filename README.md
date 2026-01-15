@@ -66,42 +66,26 @@ MeterVision uses a sophisticated **voting ensemble** to ensure maximum accuracy:
 
 ## ⚡ Quick Start
 
-### 1. Prerequisites
-- Python 3.10+
-- Tesseract OCR installed (`sudo apt install tesseract-ocr`)
+This project includes automated scripts to handle setup and deployment.
 
-### 2. Installation
+### 1. Initial Setup
+First, run the setup script. This will check for prerequisites, create a Python virtual environment, install dependencies, and guide you through creating your `.env.local` configuration file.
 ```bash
-git clone https://github.com/bejranonda/MeterVision.git
-cd MeterVision
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+chmod +x setup.sh
+./setup.sh
 ```
 
-### 3. Configuration
-Create `.env.local` in the root directory:
-```env
-GEMINI_API_KEY=your_gemini_api_key
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=securepassword123
-ADMIN_EMAIL=admin@metervision.local
-```
-
-### 4. Run
+### 2. Deploy the Service
+After the initial setup is complete, run the deployment script. This will configure and start the application as a systemd service, which runs in the background and starts automatically on boot.
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-Visit:
-- **Dashboard**: `http://localhost:8000`
-- **Installer App**: `http://localhost:8000/installer`
-- **API Docs**: `http://localhost:8000/docs`
+The script will output the status and the URL where the application is accessible.
 
-On first startup, a Super Admin user is auto-created with credentials from `.env.local`.
-
-### 5. Verification
-Verify the installation and multi-tenant setup:
+### 3. Verification
+You can verify the installation and multi-tenant setup using the provided scripts:
 ```bash
 python verify_setup.py         # Verify DB schema and OCR pipeline
 python verify_installation.py  # Simulate end-to-end installation workflow
