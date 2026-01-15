@@ -7,3 +7,4 @@ venv/
 meter_reading.db
 uploads/
 .env.local
+logs/

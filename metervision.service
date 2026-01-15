@@ -1,0 +1,14 @@
+[Unit]
+Description=MeterVision API
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/home/ogema/MeterReading
+Environment="PATH=/home/ogema/MeterReading/venv/bin"
+EnvironmentFile=/home/ogema/MeterReading/.env.local
+ExecStart=/home/ogema/MeterReading/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+[Install]
+WantedBy=multi-user.target
