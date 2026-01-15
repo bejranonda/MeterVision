@@ -93,6 +93,46 @@ python verify_installation.py  # Simulate end-to-end installation workflow
 
 ---
 
+## ⚙️ Managing the Service
+
+Once deployed as a systemd service, you can manage the MeterVision application using `systemctl` commands:
+
+*   **Start the service:**
+    ```bash
+    sudo systemctl start metervision
+    ```
+*   **Stop the service:**
+    ```bash
+    sudo systemctl stop metervision
+    ```
+*   **Restart the service:**
+    ```bash
+    sudo systemctl restart metervision
+    ```
+*   **Check the status of the service:**
+    ```bash
+    sudo systemctl status metervision
+    ```
+*   **Enable the service (to start automatically on boot):**
+    ```bash
+    sudo systemctl enable metervision
+    ```
+*   **Disable the service (to prevent automatic start on boot):**
+    ```bash
+    sudo systemctl disable metervision
+    ```
+*   **Remove the service (uninstall):**
+    ```bash
+    sudo systemctl stop metervision
+    sudo systemctl disable metervision
+    sudo rm /etc/systemd/system/metervision.service
+    sudo systemctl daemon-reload
+    sudo systemctl reset-failed
+    ```
+    Note: Removing the service does not remove the project files or database.
+
+---
+
 ## 📖 API Endpoints
 
 ### Organization Management
