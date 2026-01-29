@@ -34,7 +34,11 @@ def test_multi_tenant_api():
     
     # Step 1: Login as Super Admin
     print("\n[1] Logging in as Super Admin...")
-    admin_token = login("admin", "securepassword123")
+    import os
+    from dotenv import load_dotenv
+    load_dotenv(".env.local")
+    admin_password = os.getenv("ADMIN_PASSWORD", "securepassword123")
+    admin_token = login("admin", admin_password)
     if not admin_token:
         print("❌ Failed to login as admin")
         return

@@ -17,7 +17,9 @@ from typing import Dict, Any
 # Configuration
 BASE_URL = "http://localhost:8000"
 ADMIN_USERNAME = "admin"  # Assuming admin is created by default
-ADMIN_PASSWORD = "NewSecure*+-Password2026!"
+from dotenv import load_dotenv
+load_dotenv(".env.local")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "securepassword123")
 
 def print_step(step: str):
     print(f"\n{'='*50}")

@@ -208,13 +208,13 @@ GET    /meters_list/                   # List meters (needs org-scoping)
 POST   /meters/{serial}/reading        # Upload reading
 ```
 
-### Installation (Phase 4 - Planned)
+### Installation (Phase 4 - Complete)
 ```
 POST   /api/installations/start              # Start installation session
 POST   /api/installations/{id}/validate      # Run validation pipeline
 GET    /api/installations/{id}/status        # Get installation status
 POST   /api/installations/{id}/complete      # Complete installation
-POST   /api/cameras/heartbeat                # Camera heartbeat webhook
+POST   /api/installations/cameras/heartbeat  # Camera heartbeat webhook
 ```
 
 ## Current Implementation Status
@@ -243,10 +243,10 @@ POST   /api/cameras/heartbeat                # Camera heartbeat webhook
 - Installation workflow orchestration (start -> validate -> complete)
 - Installation API endpoints with RBAC
 
-### 🔄 Phase 5: Testing & Documentation (In Progress)
-- Created verification scripts (`verify_setup.py`, `verify_installation.py`)
+### ✅ Phase 5: Testing \u0026 Documentation (Complete)
+- Created verification scripts (`verify_setup.py`, `verify_installation.py`, `test_multi_tenant.py`)
 - Comprehensive architecture documentation
-- Unit tests pattern established (and verified)
+- End-to-end integration tests for multi-tenancy and installation
 
 ## Migration Notes
 
