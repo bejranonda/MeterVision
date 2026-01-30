@@ -8,3 +8,7 @@ meter_reading.db
 uploads/
 .env.local
 logs/
+mosquitto/certs/*.key
+mosquitto/certs/*.srl
+mosquitto/certs/*.csr
+mosquitto/certs/*.crt
