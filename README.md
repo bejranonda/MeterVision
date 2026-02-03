@@ -5,7 +5,8 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
 [![OCR Ensemble](https://img.shields.io/badge/OCR-Ensemble-green)](https://github.com/tesseract-ocr/tesseract)
-[![Gemini AI](https://img.shields.io/badge/Gemini-1.5%20\u0026%202.0%20Flash-violet?logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+[![Gemma AI](https://img.shields.io/badge/Gemma-3--27B%20\u0026%2012B-blue?logo=google)](https://ai.google.dev/gemma)
+[![OpenRouter](https://img.shields.io/badge/OpenRouter-API-orange)](https://openrouter.ai/)
 
 MeterVision is a comprehensive enterprise platform for offering "Meter Reading as a Service" to multiple organizations. It combines hierarchical asset management, AI-powered OCR, multi-tenancy, role-based access control, and camera-based installation workflows.
 
@@ -39,9 +40,10 @@ All data is organization-scoped for multi-tenant isolation.
 
 ### 🤖 Intelligent OCR Ensemble
 MeterVision uses a sophisticated **voting ensemble** to ensure maximum accuracy:
-1. **Google Gemini 1.5 & 2.0 Flash**: State-of-the-art vision-language models
-2. **EasyOCR**: Deep learning-based OCR for text extraction
-3. **Tesseract OCR**: Industry standard for reliable processing
+1. **Google Gemma 3 27B & 12B**: State-of-the-art vision models (native and via OpenRouter)
+2. **Qwen 2.5 VL**: Highly accurate visual-language model via OpenRouter
+3. **EasyOCR**: Deep learning-based OCR for text extraction
+4. **Tesseract OCR**: Industry standard for reliable processing
 *Includes calibration system using expected values for improved confidence.*
 
 ---
@@ -50,7 +52,8 @@ MeterVision uses a sophisticated **voting ensemble** to ensure maximum accuracy:
 
 - **Backend**: FastAPI, SQLModel (SQLAlchemy + Pydantic)
 - **Database**: SQLite (dev), PostgreSQL (production recommended)
-- **OCR Engine**: Tesseract, EasyOCR, Google Gemini
+- **OCR Engine**: Tesseract, EasyOCR, Gemma 3, Qwen 2.5 VL
+- **AI Providers**: Google AI Studio, OpenRouter
 - **Frontend**: Vanilla JavaScript + Modern CSS
 - **Icons**: Phosphor Icons
 - **Authentication**: JWT with OAuth2 Password Flow

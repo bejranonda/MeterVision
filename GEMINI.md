@@ -6,7 +6,7 @@ MeterVision is a comprehensive B2B SaaS platform for offering "Meter Reading as 
 ### Key Technologies
 - **Backend:** Python 3.10+, FastAPI, SQLModel (SQLAlchemy + Pydantic)
 - **Database:** SQLite (dev), PostgreSQL (production recommended)
-- **AI/OCR:** Google Gemini 1.5 & 2.0 Flash, EasyOCR, Tesseract OCR
+- **AI/OCR:** Google Gemma 3 (27B \u0026 12B), Qwen 2.5 VL, EasyOCR, Tesseract OCR
 - **Frontend:** Vanilla JavaScript, HTML5, CSS3, Phosphor Icons
 - **Authentication:** OAuth2 with Password Flow (JWT)
 - **Architecture:** Multi-tenant with organization-scoped data isolation
@@ -101,7 +101,8 @@ pip install -r requirements.txt
 ### Configuration
 Create `.env.local` file in the root directory:
 ```env
-GEMINI_API_KEY=your_gemini_api_key
+GEMINI_API_KEY=your_google_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=securepassword123
 ADMIN_EMAIL=admin@metervision.local
@@ -125,7 +126,7 @@ python verify_setup.py  # Validates hierarchy creation and OCR pipeline
 ### Backend
 - **Dependency Injection:** Uses `Depends(get_session)` for database access and `Depends(get_current_user)` for protected routes
 - **Multi-Tenant Queries:** All org-scoped routes use `get_current_user_org_context` to verify access
-- **OCR Logic:** `SmartMeterReader` class in `app/services/ocr.py` implements voting system with Gemini 1.5 Flash and 2.0 Flash, prioritizing their agreement or corroborating with EasyOCR and Tesseract
+- **OCR Logic:** `SmartMeterReader` class in `app/services/ocr.py` implements voting system with Gemma 3 27B (Google), Gemma 3 12B (OpenRouter), and Qwen 2.5 VL (OpenRouter), prioritizing their agreement or corroborating with EasyOCR and Tesseract
 - **File Handling:** Uploads saved to `uploads/` directory
 - **Service Layer:** Business logic separated into `app/services/` for testability
 
