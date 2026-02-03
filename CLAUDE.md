@@ -163,7 +163,7 @@ async def get_org_data(org_id: int, ...):
 - **Adding RBAC to route:** Use `PermissionChecker` dependency or `require_super_admin` / `require_platform_manager` helpers
 - **Tweaking OCR:** Modify `SmartMeterReader` in `app/services/ocr.py` to adjust confidence thresholds or voting logic
 
-## Installation Workflow (Phase 4 - Planned)
+## Installation Workflow (Phase 4 - Complete)
 
 ### Workflow States
 ```python
@@ -208,7 +208,7 @@ GET    /meters_list/                   # List meters (needs org-scoping)
 POST   /meters/{serial}/reading        # Upload reading
 ```
 
-### Installation (Phase 4 - Planned)
+### Installation (Phase 4 - Complete)
 ```
 POST   /api/installations/start              # Start installation session
 POST   /api/installations/{id}/validate      # Run validation pipeline
@@ -243,7 +243,7 @@ POST   /api/cameras/heartbeat                # Camera heartbeat webhook
 - Installation workflow orchestration (start -> validate -> complete)
 - Installation API endpoints with RBAC
 
-### 🔄 Phase 5: Testing & Documentation (In Progress)
+### ✅ Phase 5: Testing & Documentation (Complete)
 - Created verification scripts (`verify_setup.py`, `verify_installation.py`)
 - Comprehensive architecture documentation
 - Unit tests pattern established (and verified)

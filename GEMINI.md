@@ -163,7 +163,7 @@ async def get_org_data(org_id: int, ...):
 - **Adding RBAC to route:** Use `PermissionChecker` dependency or `require_super_admin` / `require_platform_manager` helpers
 - **Tweaking OCR:** Modify `SmartMeterReader` in `app/services/ocr.py` to adjust confidence thresholds or voting logic
 
-## Installation Workflow (Phase 4 - Planned)
+## Installation Workflow (Phase 4 - Complete)
 
 ### Workflow States
 ```python
@@ -197,7 +197,7 @@ GET    /api/organizations/{id}/users          # List org users
 DELETE /api/organizations/{id}/users/{user_id}  # Remove user
 ```
 
-### Asset Hierarchy (Existing - To Be Updated)
+### Asset Hierarchy (Complete)
 ```
 POST   /projects/                      # Create project
 POST   /customers/                     # Create customer

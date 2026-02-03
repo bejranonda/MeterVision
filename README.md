@@ -152,11 +152,11 @@ GET    /meters_list/                    # List all meters (org-scoped)
 POST   /meters/{serial}/reading         # Upload meter reading
 ```
 
-### Installation (Coming in Phase 3-4)
+### Installation (Complete)
 ```
 POST   /api/installations/start         # Start installation session
 POST   /api/installations/{id}/validate # Run validation pipeline
-POST   /api/cameras/heartbeat           # Camera heartbeat webhook
+POST   /api/installations/cameras/heartbeat # Camera heartbeat webhook
 ```
 
 ---
@@ -273,8 +273,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📚 Documentation
 
-- [Implementation Plan](docs/implementation_plan.md) - Technical specification
-- [Research & Validation](docs/research_validation.md) - Testing strategy
-- [Walkthrough](docs/walkthrough.md) - Phase 1-2 completion report
 - [GEMINI.md](GEMINI.md) - Gemini AI context
 - [CLAUDE.md](CLAUDE.md) - Claude AI context
+- [Architecture & API Reference Guide](./reference/API.md)
+- [Business Rules & Workflows](./business/RULES.md)
