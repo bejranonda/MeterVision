@@ -49,7 +49,9 @@ function setupEventListeners() {
 
     // Step 2: AI Discovery
     document.getElementById('discovery-capture-btn')?.addEventListener('click', () => document.getElementById('discovery-input').click());
+    document.getElementById('discovery-upload-btn')?.addEventListener('click', () => document.getElementById('discovery-upload-input').click());
     document.getElementById('discovery-input')?.addEventListener('change', handleDiscovery);
+    document.getElementById('discovery-upload-input')?.addEventListener('change', handleDiscovery);
     document.getElementById('discovery-skip-btn')?.addEventListener('click', () => goToStep(3));
 
     // Step 3: Meter Form

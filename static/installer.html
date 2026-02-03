@@ -137,10 +137,18 @@
                                 <span>No image captured</span>
                             </div>
                             <input type="file" id="discovery-input" accept="image/*" capture="environment" hidden>
-                            <button type="button" class="btn btn-secondary btn-block" id="discovery-capture-btn">
-                                <i class="ph ph-camera"></i>
-                                <span>Capture Meter Photo</span>
-                            </button>
+                            <input type="file" id="discovery-upload-input" accept="image/*" hidden>
+
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <button type="button" class="btn btn-primary btn-block" id="discovery-capture-btn">
+                                    <i class="ph ph-camera"></i>
+                                    <span>Capture Meter Photo</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-block" id="discovery-upload-btn">
+                                    <i class="ph ph-image-square"></i>
+                                    <span>Upload from Gallery</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div id="discovery-loading" class="loading-overlay" style="display: none;">
