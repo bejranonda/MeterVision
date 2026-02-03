@@ -6,9 +6,11 @@ load_dotenv(".env.local")
 
 # Ensure API key is present
 print(f"Checking API Key: {'Found' if os.getenv('GEMINI_API_KEY') else 'Not Found'}")
+print(f"Checking OpenRouter Key: {'Found' if os.getenv('OPENROUTER_API_KEY') else 'Not Found'}")
 
 reader = SmartMeterReader()
-image_path = "test_image.jpg"
+# Using an image found in uploads
+image_path = "uploads/3abfcbb0-2791-41ed-be61-5a39ad627a94.jpg" 
 
 if not os.path.exists(image_path):
     print(f"Error: {image_path} does not exist.")

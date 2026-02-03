@@ -2,11 +2,14 @@ import shutil
 import os
 from abc import ABC, abstractmethod
 from typing import Optional
+import requests
+import base64
 
 import pytesseract
 from PIL import Image
 import easyocr
 import re
+import google.generativeai as genai
 
 class MeterReader(ABC):
     @abstractmethod
@@ -86,19 +89,20 @@ class EasyOCRMeterReader(MeterReader):
             print(f"Error processing image with EasyOCR: {e}")
             return 0.0
 
-import google.generativeai as genai
 
-class GeminiMeterReader(MeterReader):
-    def __init__(self, model_name="gemini-1.5-flash-latest"):
+
+class GemmaGoogleMeterReader(MeterReader):
+    """Gemma 3 27B using Google Generative AI API (Google API Key)"""
+    def __init__(self, model_name="models/gemma-3-27b-it"):
         self.api_key = os.getenv("GEMINI_API_KEY")
-        self.model_name = os.getenv("GEMINI_MODEL_VERSION", model_name)
+        self.model_name = model_name
 
         if not self.api_key:
-            print("Warning: GEMINI_API_KEY not found in environment variables.")
+            print("Warning: GEMINI_API_KEY (for Gemma Google) not found in environment variables.")
             self.model = None
         else:
             genai.configure(api_key=self.api_key)
-            print(f"Initializing GeminiMeterReader with model: {self.model_name}")
+            print(f"Initializing GemmaGoogleMeterReader with model: {self.model_name}")
             self.model = genai.GenerativeModel(self.model_name)
 
     def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
@@ -119,61 +123,159 @@ class GeminiMeterReader(MeterReader):
             cleaned_text = cleaned_text.replace(',', '.')
             
             if not cleaned_text:
-                return 0.0
+                # More aggressive regex for Gemma
+                match = re.search(r'(\d+[.,]\d+|\d+)', text)
+                if match:
+                    cleaned_text = match.group(1).replace(',', '.')
+                else:
+                    return 0.0
             
             return float(cleaned_text)
         except Exception as e:
-            print(f"Error processing image with Gemini ({self.model_name}): {e}")
+            print(f"Error processing image with Gemma Google ({self.model_name}): {e}")
+            return 0.0
+
+class OpenRouterMeterReader(MeterReader):
+    def __init__(self, model_name="google/gemma-3-12b-it:free"):
+        self.api_key = os.getenv("OPENROUTER_API_KEY")
+        self.model_name = model_name
+        self.api_url = "https://openrouter.ai/api/v1/chat/completions"
+
+        if not self.api_key:
+            print("Warning: OPENROUTER_API_KEY not found in environment variables.")
+
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+        if not self.api_key:
+            return 0.0
+
+        try:
+            with open(image_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+
+            prompt = "Read the numeric value from this meter. Return ONLY the number. If you are unsure, return 0. Ignore any non-numeric text."
+            if expected_value:
+                prompt += f" The expected value is close to {expected_value}."
+
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://metervision.local",
+                "X-Title": "MeterVision"
+            }
+
+            payload = {
+                "model": self.model_name,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{encoded_string}"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(self.api_url, headers=headers, json=payload)
+            response.raise_for_status()
+            
+            result_json = response.json()
+            if 'choices' in result_json and len(result_json['choices']) > 0:
+                text = result_json['choices'][0]['message']['content'].strip()
+                
+                # Basic cleanup
+                cleaned_text = "".join([c for c in text if c.isdigit() or c in ['.', ',']])
+                cleaned_text = cleaned_text.replace(',', '.')
+                
+                if not cleaned_text:
+                    match = re.search(r'(\d+[.,]\d+|\d+)', text)
+                    if match:
+                        cleaned_text = match.group(1).replace(',', '.')
+                    else:
+                        return 0.0
+                return float(cleaned_text)
+            else:
+                return 0.0
+
+        except Exception as e:
+            print(f"Error processing image with OpenRouter ({self.model_name}): {e}")
             return 0.0
 
 class SmartMeterReader(MeterReader):
     def __init__(self):
         self.tesseract = TesseractMeterReader()
         self.easyocr = EasyOCRMeterReader()
-        self.gemini_1_5 = GeminiMeterReader(model_name="gemini-1.5-flash-latest")
-        self.gemini_2_0 = GeminiMeterReader(model_name="gemini-2.0-flash-exp")
+
+        # Gemma 3 27B via Google API
+        self.gemma_27b = GemmaGoogleMeterReader(model_name="models/gemma-3-27b-it")
+        # Gemma 3 12B via OpenRouter
+        self.gemma_12b = OpenRouterMeterReader(model_name="google/gemma-3-12b-it:free")
+        # Qwen via OpenRouter
+        self.qwen_vl = OpenRouterMeterReader(model_name="qwen/qwen-2.5-vl-7b-instruct:free")
 
     def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
         val_easy = self.easyocr.read_meter(image_path, expected_value)
         val_tess = self.tesseract.read_meter(image_path, expected_value)
-        val_gemini_1_5 = self.gemini_1_5.read_meter(image_path, expected_value)
-        val_gemini_2_0 = self.gemini_2_0.read_meter(image_path, expected_value)
 
+        val_gemma_27b = self.gemma_27b.read_meter(image_path, expected_value)
+        val_gemma_12b = self.gemma_12b.read_meter(image_path, expected_value)
+        val_qwen = self.qwen_vl.read_meter(image_path, expected_value)
         
-        print(f"OCR Results - Tesseract: {val_tess}, EasyOCR: {val_easy}, Gemini 1.5: {val_gemini_1_5}, Gemini 2.0: {val_gemini_2_0}")
+        print(f"OCR Results - Tesseract: {val_tess}, EasyOCR: {val_easy}, Gemma 27B (Google): {val_gemma_27b}, Gemma 12B (OR): {val_gemma_12b}, Qwen2.5-VL: {val_qwen}")
         
         # If expected value was matched by any, verify and return it
         if expected_value:
             try:
                 exp_float = float(expected_value.replace(",", "."))
-                results = [val_easy, val_tess, val_gemini_1_5, val_gemini_2_0]
+                results = [val_easy, val_tess, val_gemma_27b, val_gemma_12b, val_qwen]
                 if exp_float > 0 and exp_float in results:
                     return exp_float
             except:
                 pass
 
         # Voting / Consensus Logic
-        # 1. If Gemini models agree, trust them
-        if val_gemini_1_5 == val_gemini_2_0 and val_gemini_1_5 > 0:
-            return val_gemini_1_5
+        
+        # 0. Collect all positive results from AI models
+        ai_results = [v for v in [val_gemma_27b, val_gemma_12b, val_qwen] if v > 0]
+        
+        # If all agree (highly unlikely)
 
-        # 2. If a Gemini model agrees with a local OCR, that's a strong signal
-        if val_gemini_2_0 > 0 and (val_gemini_2_0 == val_easy or val_gemini_2_0 == val_tess):
-            return val_gemini_2_0
-        if val_gemini_1_5 > 0 and (val_gemini_1_5 == val_easy or val_gemini_1_5 == val_tess):
-            return val_gemini_1_5
+            
+        # If any 2 AI models agree
+        if val_gemma_27b > 0 and (val_gemma_27b == val_gemma_12b):
+            return val_gemma_27b
+        if val_gemma_12b > 0 and (val_gemma_12b == val_qwen):
+            return val_gemma_12b
 
-        # 3. If local OCRs agree, trust them
+        # 1. If Gemma 27B agrees with a local OCR
+        if val_gemma_27b > 0 and (val_gemma_27b == val_easy or val_gemma_27b == val_tess):
+            return val_gemma_27b
+
+
+
+        # 3. If local OCRs agree
         if val_easy == val_tess and val_easy > 0:
             return val_easy
         
-        # 4. If no consensus, trust the "smartest" model that returned a value. Prioritize 2.0.
-        if val_gemini_2_0 > 0:
-            return val_gemini_2_0
-        if val_gemini_1_5 > 0:
-            return val_gemini_1_5
+        # 4. If no consensus, trust the "smartest" model that returned a value. 
+        # Prioritize Gemma 3 27B.
+        if val_gemma_27b > 0:
+            return val_gemma_27b
+        if val_gemma_12b > 0:
+            return val_gemma_12b
+        if val_qwen > 0:
+            return val_qwen
 
-        # 5. Fallback to local models if Gemini failed
+
+        # 5. Fallback to local models
         if val_easy > 0:
             return val_easy
         elif val_tess > 0:
