@@ -13,18 +13,18 @@ import google.generativeai as genai
 
 class MeterReader(ABC):
     @abstractmethod
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
         pass
 
 class MockMeterReader(MeterReader):
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
         # Simulate processing time or just return a static value
         if expected_value:
              return float(expected_value)
         return 12345.67
 
 class TesseractMeterReader(MeterReader):
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
         try:
             image = Image.open(image_path)
             text = pytesseract.image_to_string(image, config='--psm 7')
@@ -50,7 +50,7 @@ class EasyOCRMeterReader(MeterReader):
     def __init__(self):
         self.reader = easyocr.Reader(['en'])
 
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
         try:
             results = self.reader.readtext(image_path, detail=0)
             
@@ -105,13 +105,13 @@ class GemmaGoogleMeterReader(MeterReader):
             print(f"Initializing GemmaGoogleMeterReader with model: {self.model_name}")
             self.model = genai.GenerativeModel(self.model_name)
 
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
         if not self.model:
              return 0.0
         
         try:
             image = Image.open(image_path)
-            prompt = "Read the numeric value from this meter. Return ONLY the number. If you are unsure, return 0. Ignore any non-numeric text."
+            prompt = custom_prompt if custom_prompt else "Read the numeric value from this meter. Return ONLY the number. If you are unsure, return 0. Ignore any non-numeric text."
             if expected_value:
                 prompt += f" The expected value is close to {expected_value}."
             
@@ -144,7 +144,7 @@ class OpenRouterMeterReader(MeterReader):
         if not self.api_key:
             print("Warning: OPENROUTER_API_KEY not found in environment variables.")
 
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
         if not self.api_key:
             return 0.0
 
@@ -152,7 +152,7 @@ class OpenRouterMeterReader(MeterReader):
             with open(image_path, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
-            prompt = "Read the numeric value from this meter. Return ONLY the number. If you are unsure, return 0. Ignore any non-numeric text."
+            prompt = custom_prompt if custom_prompt else "Read the numeric value from this meter. Return ONLY the number. If you are unsure, return 0. Ignore any non-numeric text."
             if expected_value:
                 prompt += f" The expected value is close to {expected_value}."
 
@@ -221,13 +221,13 @@ class SmartMeterReader(MeterReader):
         # Qwen via OpenRouter
         self.qwen_vl = OpenRouterMeterReader(model_name="qwen/qwen-2.5-vl-7b-instruct:free")
 
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
-        val_easy = self.easyocr.read_meter(image_path, expected_value)
-        val_tess = self.tesseract.read_meter(image_path, expected_value)
+    def read_meter(self, image_path: str, expected_value: Optional[str] = None, custom_prompt: Optional[str] = None) -> float:
+        val_easy = self.easyocr.read_meter(image_path, expected_value, custom_prompt)
+        val_tess = self.tesseract.read_meter(image_path, expected_value, custom_prompt)
 
-        val_gemma_27b = self.gemma_27b.read_meter(image_path, expected_value)
-        val_gemma_12b = self.gemma_12b.read_meter(image_path, expected_value)
-        val_qwen = self.qwen_vl.read_meter(image_path, expected_value)
+        val_gemma_27b = self.gemma_27b.read_meter(image_path, expected_value, custom_prompt)
+        val_gemma_12b = self.gemma_12b.read_meter(image_path, expected_value, custom_prompt)
+        val_qwen = self.qwen_vl.read_meter(image_path, expected_value, custom_prompt)
         
         print(f"OCR Results - Tesseract: {val_tess}, EasyOCR: {val_easy}, Gemma 27B (Google): {val_gemma_27b}, Gemma 12B (OR): {val_gemma_12b}, Qwen2.5-VL: {val_qwen}")
         
@@ -282,6 +282,45 @@ class SmartMeterReader(MeterReader):
             return val_tess
         else:
             return 0.0
+
+    def discover_meter(self, image_path: str) -> dict:
+        """
+        Analyze meter image to suggest type, serial number, and initial reading.
+        Returns: {meter_type: str, serial_number: str, reading: float}
+        """
+        if not self.gemma_27b.model:
+            return {"meter_type": "Electricity", "serial_number": "UNKNOWN", "reading": 0.0}
+
+        try:
+            image = Image.open(image_path)
+            prompt = """
+            Analyze this meter image and return a JSON object with:
+            1. 'meter_type': One of ['Electricity', 'Gas', 'Water', 'Heat']
+            2. 'serial_number': The serial number or ID printed on the meter
+            3. 'reading': The current numeric value shown on the display/dial (as a number)
+            
+            Return ONLY the valid JSON object. Example: {"meter_type": "Gas", "serial_number": "123456", "reading": 102.5}
+            """
+            
+            response = self.gemma_27b.model.generate_content([prompt, image])
+            text = response.text.strip()
+            
+            # Clean possible markdown code blocks
+            if "```json" in text:
+                text = text.split("```json")[1].split("```")[0].strip()
+            elif "```" in text:
+                text = text.split("```")[1].split("```")[0].strip()
+            
+            import json
+            data = json.loads(text)
+            return {
+                "meter_type": data.get("meter_type", "Electricity"),
+                "serial_number": data.get("serial_number", "UNKNOWN"),
+                "reading": float(data.get("reading", 0.0))
+            }
+        except Exception as e:
+            print(f"Discovery error: {e}")
+            return {"meter_type": "Electricity", "serial_number": "UNKNOWN", "reading": 0.0}
 
 class BasicMeterReader(MeterReader):
     def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:

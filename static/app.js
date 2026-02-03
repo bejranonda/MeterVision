@@ -355,7 +355,7 @@ window.handleUpload = async function (input) {
 }
 
 window.promptNewMeter = function () {
-    alert("This feature would open a creation wizard in the full app.");
+    window.location.href = '/static/installer.html';
 }
 
 // --- Init ---

@@ -1,6 +1,6 @@
 """Installation management API routes."""
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlmodel import Session
 from pydantic import BaseModel
 
@@ -35,6 +35,9 @@ class InstallationResponse(BaseModel):
 class CompleteInstallationRequest(BaseModel):
     """Request to complete installation."""
     installer_confirmed: bool
+    expected_reading: Optional[float] = None
+    serial_number: Optional[str] = None
+    meter_type: Optional[str] = None
 
 
 # --- Installation Endpoints ---
@@ -116,6 +119,41 @@ async def start_installation(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+
+@router.post("/analyze-image")
+async def analyze_installation_image(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Beta: Use AI to discover meter information from an image.
+    Returns suggested meter_type, serial_number, and initial reading.
+    """
+    import os
+    import uuid
+    from ..services.ocr import SmartMeterReader, save_upload_file
+    
+    # Save temporary file
+    file_ext = file.filename.split(".")[-1]
+    temp_path = f"uploads/temp_{uuid.uuid4()}.{file_ext}"
+    save_upload_file(file, temp_path)
+    
+    try:
+        reader = SmartMeterReader()
+        discovery = reader.discover_meter(temp_path)
+        
+        # Keep temp file for verification if needed, or delete
+        # os.remove(temp_path) 
+        
+        return {
+            "suggestions": discovery,
+            "temp_image_path": temp_path
+        }
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise HTTPException(status_code=500, detail=f"AI Discovery failed: {str(e)}")
 
 
 @router.post("/{session_id}/validate")
@@ -232,11 +270,31 @@ async def complete_installation(
             installer_confirmed=request.installer_confirmed,
             session=db_session
         )
-        
+
+        # Handle calibration if confirmed
+        if request.installer_confirmed and request.expected_reading is not None:
+             # Update meter with metadata and calibrate
+             meter = db_session.get(Meter, installation.meter_id)
+             if meter:
+                 if request.serial_number:
+                     meter.serial_number = request.serial_number
+                 if request.meter_type:
+                     meter.meter_type = request.meter_type
+                 
+                 meter.expected_reading = request.expected_reading
+                 
+                 # Optimization: Modify prompt if reading was off
+                 # In a real scenario, we'd compare the last validation reading with expected
+                 # For now, we'll set a hint prompt
+                 meter.custom_prompt = f"Read the numeric value from this {meter.meter_type} meter. Note: This specific meter usually shows values around {request.expected_reading}. Ensure the decimal point is correctly placed. Return ONLY the number."
+                 
+                 db_session.add(meter)
+                 db_session.commit()
+
         return {
             "session_id": installation.id,
             "status": installation.status,
-            "message": "Installation completed successfully" if request.installer_confirmed
+            "message": "Installation completed and calibrated successfully" if request.installer_confirmed
                       else "Installation marked as failed"
         }
         

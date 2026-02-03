@@ -90,6 +90,8 @@ class MeterBase(SQLModel):
     place_id: Optional[int] = Field(default=None, foreign_key="place.id")
     organization_id: int = Field(foreign_key="organization.id", index=True)
     aoi_config: Optional[str] = None  # JSON string for AOI coordinates
+    custom_prompt: Optional[str] = None  # Optimized prompt for this specific meter
+    expected_reading: Optional[float] = None  # The reading provided during calibration
 
 
 class Meter(MeterBase, TimestampMixin, table=True):

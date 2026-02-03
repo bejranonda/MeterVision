@@ -306,7 +306,7 @@ async def upload_reading(
     
     # 3. Process Image
     reader = SmartMeterReader()
-    reading_value = reader.read_meter(file_path, expected_value)
+    reading_value = reader.read_meter(file_path, expected_value, meter.custom_prompt)
     
     # 4. Save Reading (with organization_id)
     reading = Reading(

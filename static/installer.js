@@ -1,6 +1,6 @@
 /**
  * MeterVision Installer App
- * Mobile-first installation wizard with QR scanning and validation
+ * Mobile-first installation wizard with AI discovery and calibration
  */
 
 // API Configuration
@@ -17,6 +17,7 @@ const installationData = {
     meterSerial: null,
     meterType: null,
     meterUnit: null,
+    expectedReading: null,
     meterLocation: null,
     organizationId: null,
     sessionId: null
@@ -43,12 +44,23 @@ function setupEventListeners() {
     // Logout
     document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
 
-    // Step navigation
+    // Step 1: Manual Serial
     document.getElementById('manual-submit-btn')?.addEventListener('click', handleManualSerial);
+
+    // Step 2: AI Discovery
+    document.getElementById('discovery-capture-btn')?.addEventListener('click', () => document.getElementById('discovery-input').click());
+    document.getElementById('discovery-input')?.addEventListener('change', handleDiscovery);
+    document.getElementById('discovery-skip-btn')?.addEventListener('click', () => goToStep(3));
+
+    // Step 3: Meter Form
     document.getElementById('meter-form')?.addEventListener('submit', handleMeterForm);
-    document.getElementById('meter-back-btn')?.addEventListener('click', () => goToStep(1));
-    document.getElementById('validate-back-btn')?.addEventListener('click', () => goToStep(2));
-    document.getElementById('validate-continue-btn')?.addEventListener('click', () => goToStep(4));
+    document.getElementById('meter-back-btn')?.addEventListener('click', () => goToStep(2));
+
+    // Step 4: Validation
+    document.getElementById('validate-back-btn')?.addEventListener('click', () => goToStep(3));
+    document.getElementById('validate-continue-btn')?.addEventListener('click', handleComplete);
+
+    // Step 5: New Installation
     document.getElementById('new-installation-btn')?.addEventListener('click', startNewInstallation);
 }
 
@@ -90,8 +102,6 @@ async function handleLogin(e) {
 
 async function loadUserInfo() {
     try {
-        // For now, we'll use a simple username display
-        // In production, you might want to fetch user details
         const payload = JSON.parse(atob(authToken.split('.')[1]));
         currentUser = { username: payload.sub };
         document.getElementById('username-display').textContent = currentUser.username;
@@ -133,10 +143,8 @@ async function loadOrganizations() {
         }
 
         if (organizations.length === 1) {
-            // Auto-select if only one organization
             selectOrganization(organizations[0]);
         } else {
-            // Show organization selection
             displayOrganizations(organizations);
             showScreen('org-selection-screen');
         }
@@ -169,7 +177,7 @@ function selectOrganization(org) {
 }
 
 // ====================
-// Installation Wizard
+// Wizard Navigation
 // ====================
 
 function startInstallation() {
@@ -181,33 +189,39 @@ function startInstallation() {
 function goToStep(stepNumber) {
     currentStep = stepNumber;
 
+    // Correct index mapping (1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4)
+    const stepIdx = stepNumber - 1;
+
     // Update step indicators
     document.querySelectorAll('.step').forEach((step, index) => {
-        const num = index + 1;
         step.classList.remove('active', 'completed');
-
-        if (num < stepNumber) {
+        if (index < stepIdx) {
             step.classList.add('completed');
-        } else if (num === stepNumber) {
+        } else if (index === stepIdx) {
             step.classList.add('active');
         }
     });
 
-    // Update step content
+    // Update step content visibility
     document.querySelectorAll('.wizard-step').forEach((step, index) => {
-        step.classList.toggle('active', index + 1 === stepNumber);
+        step.classList.toggle('active', index === stepIdx);
     });
 
     // Handle QR scanner lifecycle
-    if (stepNumber === 1 && !qrScanner) {
-        setTimeout(() => initializeQRScanner(), 100);
-    } else if (stepNumber !== 1 && qrScanner) {
-        stopQRScanner();
+    if (stepNumber === 1) {
+        if (!qrScanner) setTimeout(() => initializeQRScanner(), 100);
+    } else {
+        if (qrScanner) stopQRScanner();
+    }
+
+    // Completion summary if going to step 5
+    if (stepNumber === 5) {
+        showCompletionSummary();
     }
 }
 
 // ====================
-// QR Code Scanner
+// Step 1: QR & Manual
 // ====================
 
 function initializeQRScanner() {
@@ -215,62 +229,102 @@ function initializeQRScanner() {
     if (!qrReaderDiv || qrScanner) return;
 
     qrScanner = new Html5Qrcode("qr-reader");
-
-    const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-    };
+    const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
 
     qrScanner.start(
         { facingMode: "environment" },
         config,
-        (decodedText) => {
-            handleQRScan(decodedText);
-        },
-        (errorMessage) => {
-            // Ignore scan errors
-        }
-    ).catch(err => {
-        console.error('QR Scanner failed to start:', err);
-        // Scanner not available, user can use manual input
-    });
+        (decodedText) => handleQRScan(decodedText),
+        () => { }
+    ).catch(err => console.error('QR Scanner failed:', err));
 }
 
 function stopQRScanner() {
     if (qrScanner) {
-        qrScanner.stop().then(() => {
-            qrScanner = null;
-        }).catch(err => {
-            console.error('Failed to stop scanner:', err);
-        });
+        qrScanner.stop().then(() => { qrScanner = null; }).catch(err => console.error(err));
     }
 }
 
 function handleQRScan(serial) {
-    if (installationData.cameraSerial) return;  // Already scanned
-
+    if (installationData.cameraSerial) return;
     stopQRScanner();
     processCameraSerial(serial);
 }
 
 function handleManualSerial() {
     const serial = document.getElementById('manual-serial').value.trim();
-    if (serial) {
-        processCameraSerial(serial);
-    }
+    if (serial) processCameraSerial(serial);
 }
 
-async function processCameraSerial(serial) {
+function processCameraSerial(serial) {
     installationData.cameraSerial = serial;
-    console.log('Camera serial:', serial);
-
-    // Move to meter info step
     goToStep(2);
 }
 
 // ====================
-// Meter Information
+// Step 2: AI Discovery
+// ====================
+
+async function handleDiscovery(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const preview = document.getElementById('discovery-preview');
+        preview.innerHTML = `<img src="${event.target.result}" alt="Captured meter">`;
+    };
+    reader.readAsDataURL(file);
+
+    document.getElementById('discovery-loading').style.display = 'block';
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(`${API_URL}/api/installations/analyze-image`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` },
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('AI analysis failed');
+        const data = await response.json();
+        const suggestions = data.suggestions;
+
+        // Pre-fill Step 3 form
+        if (suggestions.serial_number && suggestions.serial_number !== 'UNKNOWN') {
+            document.getElementById('meter-serial').value = suggestions.serial_number;
+            document.getElementById('ai-serial-badge').style.display = 'inline-block';
+        }
+        if (suggestions.meter_type) {
+            document.getElementById('meter-type').value = suggestions.meter_type;
+            document.getElementById('ai-type-badge').style.display = 'inline-block';
+
+            const unitSelect = document.getElementById('meter-unit');
+            if (suggestions.meter_type === 'Electricity') unitSelect.value = 'kWh';
+            else if (suggestions.meter_type === 'Gas') unitSelect.value = 'm3';
+            else if (suggestions.meter_type === 'Water') unitSelect.value = 'L';
+        }
+        if (suggestions.reading) {
+            document.getElementById('meter-reading').value = suggestions.reading;
+            document.getElementById('suggested-reading-val').textContent = suggestions.reading;
+            document.getElementById('ai-reading-suggestion').style.display = 'block';
+        }
+
+        await delay(1500);
+        goToStep(3);
+    } catch (error) {
+        console.error('Discovery error:', error);
+        goToStep(3);
+    } finally {
+        document.getElementById('discovery-loading').style.display = 'none';
+    }
+}
+
+// ====================
+// Step 3: Meter Info
 // ====================
 
 async function handleMeterForm(e) {
@@ -279,9 +333,9 @@ async function handleMeterForm(e) {
     installationData.meterSerial = document.getElementById('meter-serial').value;
     installationData.meterType = document.getElementById('meter-type').value;
     installationData.meterUnit = document.getElementById('meter-unit').value;
+    installationData.expectedReading = document.getElementById('meter-reading').value;
     installationData.meterLocation = document.getElementById('meter-location').value || '';
 
-    // Start installation session via API
     try {
         const response = await apiCall('/api/installations/start', {
             method: 'POST',
@@ -290,75 +344,52 @@ async function handleMeterForm(e) {
                 meter_serial: installationData.meterSerial,
                 meter_type: installationData.meterType,
                 meter_unit: installationData.meterUnit,
-                meter_location: installationData.meterLocation,
-                organization_id: installationData.organizationId
+                organization_id: installationData.organizationId,
+                meter_location: installationData.meterLocation
             })
         });
 
         installationData.sessionId = response.session_id;
-
-        // Move to validation step
-        goToStep(3);
-
-        // Start validation automatically
+        goToStep(4);
         await runValidation();
-
     } catch (error) {
-        console.error('Failed to start installation:', error);
-        alert('Failed to start installation: ' + error.message);
+        alert('Failed: ' + error.message);
     }
 }
 
 // ====================
-// Validation
+// Step 4: Validation
 // ====================
 
 async function runValidation() {
-    // Reset all checks to pending
-    const checks = ['connection', 'fov', 'glare', 'ocr'];
+    document.querySelectorAll('.validation-item').forEach(i => i.classList.add('pending'));
 
-    // Call the backend validation API
     try {
-        const response = await apiCall(`/api/installations/${installationData.sessionId}/validate`, {
-            method: 'POST'
-        });
-
+        const response = await apiCall(`/api/installations/${installationData.sessionId}/validate`, { method: 'POST' });
         const results = response.validation_results;
 
-        // Update UI based on real results
         updateValidationUI('connection', results.connection);
-        await delay(500);
-
+        await delay(300);
         updateValidationUI('fov', results.fov);
-        await delay(500);
-
+        await delay(300);
         updateValidationUI('glare', results.glare);
-        await delay(500);
-
+        await delay(300);
         updateValidationUI('ocr', results.ocr);
 
-        // Enable continue button if all passed
-        const allPassed = results.connection.passed &&
-            results.fov.passed &&
-            results.glare.passed &&
-            results.ocr.passed;
-
+        const allPassed = results.connection.passed && results.fov.passed && results.ocr.passed;
         document.getElementById('validate-continue-btn').disabled = !allPassed;
-
     } catch (error) {
-        console.error('Validation failed:', error);
-        alert('Validation failed: ' + error.message);
+        console.error(error);
     }
 }
 
 function updateValidationUI(checkType, result) {
     const item = document.querySelector(`.validation-item[data-check="${checkType}"]`);
+    if (!item) return;
     const icon = item.querySelector('.validation-icon i');
     const status = item.querySelector('.validation-status');
 
-    // Remove pending state
     item.classList.remove('pending');
-
     if (result.passed) {
         item.classList.add('passed');
         icon.className = 'ph ph-check-circle';
@@ -366,38 +397,30 @@ function updateValidationUI(checkType, result) {
     } else {
         item.classList.add('failed');
         icon.className = 'ph ph-x-circle';
-        status.textContent = result.message || 'Validation failed';
+        status.textContent = result.message || 'Failed';
+    }
+}
+
+async function handleComplete() {
+    try {
+        await apiCall(`/api/installations/${installationData.sessionId}/complete`, {
+            method: 'POST',
+            body: JSON.stringify({
+                installer_confirmed: true,
+                expected_reading: parseFloat(installationData.expectedReading),
+                serial_number: installationData.meterSerial,
+                meter_type: installationData.meterType
+            })
+        });
+        goToStep(5);
+    } catch (error) {
+        alert('Completion failed: ' + error.message);
     }
 }
 
 // ====================
-// Complete Installation
+// Step 5: Summary
 // ====================
-
-function goToStep(stepNum) {
-    if (stepNum === 4) {
-        showCompletionSummary();
-    }
-
-    currentStep = stepNum;
-
-    // Update step indicators
-    document.querySelectorAll('.step').forEach((step, index) => {
-        const num = index + 1;
-        step.classList.remove('active', 'completed');
-
-        if (num < stepNum) {
-            step.classList.add('completed');
-        } else if (num === stepNum) {
-            step.classList.add('active');
-        }
-    });
-
-    // Update step content
-    document.querySelectorAll('.wizard-step').forEach((step, index) => {
-        step.classList.toggle('active', index + 1 === stepNum);
-    });
-}
 
 function showCompletionSummary() {
     document.getElementById('summary-camera-serial').textContent = installationData.cameraSerial;
@@ -407,64 +430,25 @@ function showCompletionSummary() {
 }
 
 function startNewInstallation() {
-    // Reset installation data
-    Object.keys(installationData).forEach(key => {
-        if (key !== 'organizationId') {
-            installationData[key] = null;
-        }
-    });
-
-    // Reset form
-    document.getElementById('manual-serial').value = '';
-    document.getElementById('meter-form').reset();
-
-    // Reset validation items
-    document.querySelectorAll('.validation-item').forEach(item => {
-        item.classList.remove('pending', 'passed', 'failed');
-        item.querySelector('.validation-icon i').className = 'ph ph-circle-notch';
-        item.querySelector('.validation-status').textContent = 'Waiting...';
-    });
-
-    document.getElementById('validate-continue-btn').disabled = true;
-
-    // Go back to step 1
-    goToStep(1);
+    window.location.reload();
 }
 
 // ====================
-// Utility Functions
+// Utils
 // ====================
 
 async function apiCall(endpoint, options = {}) {
-    const headers = {
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
-    if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers
-    });
-
-    if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'API request failed');
-    }
-
+    const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+    if (!response.ok) throw new Error(await response.text());
     return response.json();
 }
 
 function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId)?.classList.add('active');
 }
 
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
