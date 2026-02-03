@@ -133,8 +133,8 @@ function renderMeterCard(meter) {
     let unit = meter.unit || "";
     let statusIcon = "ph-question";
 
-    if (meter.latest_reading) {
-        mainValue = meter.latest_reading.value;
+    if (meter.readings && meter.readings.length > 0) {
+        mainValue = meter.readings[0].value;
     }
 
     // Choose icon
@@ -244,14 +244,13 @@ async function initializeApp() {
         // Enhance meters
         state.flatMeters = await Promise.all(meters.map(async m => {
             m.place_name = placeMap[m.place_id];
-            // Fetch latest reading for each (N+1 query, but fine for demo size)
             try {
                 const rRes = await fetchWithAuth(`/meters/${m.serial_number}/readings`);
                 const readings = await rRes.json();
-                if (readings && readings.length > 0) {
-                    m.latest_reading = readings[0];
-                }
-            } catch (e) { }
+                m.readings = readings || [];
+            } catch (e) {
+                m.readings = [];
+            }
             return m;
         }));
 
@@ -293,14 +292,18 @@ window.openMeterDetails = function (id) {
              <strong>Unit:</strong> ${meter.unit}
         </div>
         <h4>Reading History</h4>
-        <div style="max-height: 200px; overflow-y: auto;">
-             ${meter.latest_reading ?
-            `<div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                    <span>${new Date(meter.latest_reading.timestamp).toLocaleString()}</span>
-                    <strong>${meter.latest_reading.value}</strong>
-                 </div>`
-            : '<p style="color:#888;">No readings found.</p>'}
-             <p style="font-size: 0.8rem; color: #888; margin-top: 10px; text-align: center;">(Full history not loaded in demo)</p>
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px;">
+             ${meter.readings && meter.readings.length > 0 ?
+            meter.readings.map(r => `
+                <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.85rem; color: #555;">${new Date(r.timestamp).toLocaleString()}</span>
+                        <span style="font-size: 0.75rem; color: #888;">${r.status || 'Verified'}</span>
+                    </div>
+                    <strong>${r.value} <span style="font-size: 0.8rem; font-weight: normal; color: #666;">${meter.unit}</span></strong>
+                </div>
+            `).join('')
+            : '<p style="padding: 20px; text-align: center; color:#888;">No readings found.</p>'}
         </div>
     `;
 
