@@ -20,7 +20,7 @@ MeterVision is a comprehensive enterprise platform for offering "Meter Reading a
 - **Flexible User Assignment**: Users can belong to multiple organizations with different roles
 
 ### 👥 User Roles
-1. **Super Admin** - Full system access, create organizations
+1. **Super Admin** - Full system access, create organizations, view system logs
 2. **Platform Manager** - Manage installers globally  
 3. **Org Manager** - Manage specific organization, assign users
 4. **Org Viewer** - Read-only access to organization data
@@ -30,7 +30,13 @@ MeterVision is a comprehensive enterprise platform for offering "Meter Reading a
 Organize your infrastructure with a six-layer hierarchy:
 - **Organization** → **Project** → **Customer** → **Building** → **Place** → **Meter**
 
-All data is organization-scoped for multi-tenant isolation.
+All data is organization-scoped for multi-tenant isolation. Photos are automatically classified by device ID and stored by capture time.
+
+### 📡 MQTT Snapshot Processing & Logging
+- **Automated Processing**: Systems automatically listen for camera snapshots on MQTT topics.
+- **Photo Classification**: Images are decoded from base64 and stored in device-specific folders (`uploads/<devMac>/`).
+- **Comprehensive Logging**: Every MQTT message processing step is logged, including success status, file paths, and simulated meter readings.
+- **Portal UI**: Dedicated 'Logs' section in the management portal for reviewing system activity and errors.
 
 ### 📷 Camera-Based Installation Workflow
 - **QR Code Scanning**: Register cameras by scanning serial numbers
@@ -58,11 +64,12 @@ MeterVision uses a sophisticated **voting ensemble** to ensure maximum accuracy:
 - **Icons**: Phosphor Icons
 - **Authentication**: JWT with OAuth2 Password Flow
 
-### Database Schema (14 Tables)
+### Database Schema (15 Tables)
 - **Tenant**: `organization`, `organizationsettings`
 - **RBAC**: `user`, `userorganizationrole`  
 - **Device**: `camera`, `cameraheartbeat`
 - **Installation**: `installationsession`, `validationcheck`
+- **Logging**: `log`
 - **Assets**: `project`, `customer`, `building`, `place`, `meter`, `reading`
 
 ---
@@ -162,6 +169,12 @@ POST   /api/installations/{id}/validate # Run validation pipeline
 POST   /api/installations/cameras/heartbeat # Camera heartbeat webhook
 ```
 
+### Logs
+```
+POST   /api/logs/                       # Create a new log entry (Internal)
+GET    /api/logs/                       # Retrieve system logs
+```
+
 ---
 
 ## 🔐 Security & Multi-Tenancy
@@ -213,16 +226,20 @@ MeterVision/
 │   │   ├── user_rbac.py     # User & RBAC
 │   │   ├── device.py        # Camera models
 │   │   ├── installation.py  # Installation workflow
-│   │   └── asset.py         # Asset hierarchy
+│   │   ├── asset.py         # Asset hierarchy
+│   │   └── log.py           # System logging
 │   ├── middleware/
 │   │   └── rbac.py          # Permission checking
 │   ├── services/
 │   │   ├── ocr.py           # SmartMeterReader (ensemble)
-│   │   └── rbac_service.py  # Organization/RBAC logic
+│   │   ├── rbac_service.py  # Organization/RBAC logic
+│   │   └── log_service.py   # Logging logic
 │   └── routers/
-│       └── organizations.py # Organization API
+│       ├── organizations.py # Organization API
+│       ├── installation.py  # Installation API
+│       └── logs.py          # Logging API
 ├── static/                  # Frontend assets
-├── uploads/                 # Meter images
+├── uploads/                 # Meter images (organized by device)
 ├── logs/                    # Application logs
 ├── .env.local              # Environment configuration
 └── requirements.txt         # Python dependencies
@@ -259,6 +276,11 @@ MeterVision/
 - [Business Rules \u0026 Workflows](./business/RULES.md)
 - Comprehensive simulation and verification scripts
 - Multi-tenant and installation end-to-end tests
+
+### ✅ Phase 6: MQTT Processing \u0026 Logging (Complete)
+- Automated MQTT snapshot decoding and classification
+- Multi-tenant logging system for audit trails
+- Portal UI for system log monitoring
 
 ---
 

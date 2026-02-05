@@ -20,26 +20,30 @@ The project follows a modular FastAPI structure with multi-tenant support:
 │   ├── main.py              # Application entry, API routes, startup
 │   ├── database.py          # Database connection, session management
 │   ├── auth.py              # JWT authentication logic
-│   ├── models/              # Multi-tenant data models (14 tables)
+│   ├── models/              # Multi-tenant data models (15 tables)
 │   │   ├── base.py          # TimestampMixin, SoftDeleteMixin
 │   │   ├── tenant.py        # Organization, OrganizationSettings
 │   │   ├── user_rbac.py     # User, UserOrganizationRole, UserRoleEnum
 │   │   ├── device.py        # Camera, CameraHeartbeat, CameraStatusEnum
 │   │   ├── installation.py  # InstallationSession, ValidationCheck
-│   │   └── asset.py         # Project, Customer, Building, Place, Meter, Reading
+│   │   ├── asset.py         # Project, Customer, Building, Place, Meter, Reading
+│   │   └── log.py           # System logs
 │   ├── middleware/
 │   │   └── rbac.py          # PermissionChecker, get_current_user_org_context
 │   ├── services/
 │   │   ├── ocr.py           # SmartMeterReader (ensemble voting mechanism)
-│   │   └── rbac_service.py  # RBACService, OrganizationService
+│   │   ├── rbac_service.py  # RBACService, OrganizationService
+│   │   └── log_service.py   # Logging service
 │   └── routers/
-│       └── organizations.py # Organization management API
+│       ├── organizations.py # Organization management API
+│       ├── installation.py  # Installation workflow API
+│       └── logs.py          # System logging API
 ├── static/                  # Frontend assets (served via /static)
 │   ├── app.js               # SPA logic
 │   ├── index.html           # Main entry point
 │   └── style.css            # Styling
 ├── logs/                    # Application logs
-├── uploads/                 # Storage for uploaded meter images
+├── uploads/                 # Storage for uploaded meter images (by device)
 ├── verify_setup.py          # Integration testing script
 └── requirements.txt         # Python dependencies
 ```
@@ -62,6 +66,7 @@ The project follows a modular FastAPI structure with multi-tenant support:
 - **CameraHeartbeat**: Connectivity logs
 - **InstallationSession**: Tracks installation workflow
 - **ValidationCheck**: Individual validation step results
+- **Log**: System-wide event logging
 
 ### Multi-Tenant Isolation Strategy
 - All entities include `organization_id` foreign key for data isolation
@@ -74,7 +79,7 @@ The project follows a modular FastAPI structure with multi-tenant support:
 ### User Roles
 ```python
 class UserRoleEnum(str, Enum):
-    SUPER_ADMIN = "super_admin"           # Full system access
+    SUPER_ADMIN = "super_admin"           # Full system access, log access
     PLATFORM_MANAGER = "platform_manager" # Manage installers globally  
     ORG_MANAGER = "org_manager"           # Manage specific organization
     ORG_VIEWER = "org_viewer"             # Read-only org access
@@ -127,7 +132,7 @@ python verify_setup.py  # Validates hierarchy creation and OCR pipeline
 - **Dependency Injection:** Uses `Depends(get_session)` for database access and `Depends(get_current_user)` for protected routes
 - **Multi-Tenant Queries:** All org-scoped routes use `get_current_user_org_context` to verify access
 - **OCR Logic:** `SmartMeterReader` class in `app/services/ocr.py` implements voting system with Gemma 3 27B (Google), Gemma 3 12B (OpenRouter), and Qwen 2.5 VL (OpenRouter), prioritizing their agreement or corroborating with EasyOCR and Tesseract
-- **File Handling:** Uploads saved to `uploads/` directory
+- **File Handling:** Uploads saved to `uploads/<device_mac>/` directory
 - **Service Layer:** Business logic separated into `app/services/` for testability
 
 ### RBAC Middleware
@@ -154,9 +159,9 @@ async def get_org_data(org_id: int, ...):
 ```
 
 ### Frontend
-- **Lightweight:** Pure HTML/JS. `state` object in `app.js` manages simple SPA routing and data
+- **SPA Architecture:** Modern sidebar-based UI with client-side routing in `app.js`
 - **Auth:** Stores JWT in `localStorage`
-- **Organization Selection:** Multi-org users select context on login (future enhancement)
+- **Logging Portal:** Dedicated UI for viewing system logs and MQTT processing results
 
 ### Common Tasks
 - **Adding a new model:** Update `app/models/*.py` and run the app (SQLModel automatically creates tables)
@@ -198,7 +203,7 @@ GET    /api/organizations/{id}/users          # List org users
 DELETE /api/organizations/{id}/users/{user_id}  # Remove user
 ```
 
-### Asset Hierarchy (Existing - To Be Updated)
+### Asset Hierarchy (Complete)
 ```
 POST   /projects/                      # Create project
 POST   /customers/                     # Create customer
@@ -218,11 +223,17 @@ POST   /api/installations/{id}/complete      # Complete installation
 POST   /api/cameras/heartbeat                # Camera heartbeat webhook
 ```
 
+### Logs (New)
+```
+POST   /api/logs/                            # Create a new log entry (Internal)
+GET    /api/logs/                            # Retrieve system logs
+```
+
 ## Current Implementation Status
 
 ### ✅ Phase 1: Database Architecture (Complete)
-- Multi-tenant schema with 14 tables
-- Organization, User/RBAC, Camera, Installation, Asset models
+- Multi-tenant schema with 15 tables
+- Organization, User/RBAC, Camera, Installation, Log models
 - Organization-scoped data isolation
 - Migrations and TYPE_CHECKING for circular imports
 
@@ -247,7 +258,12 @@ POST   /api/cameras/heartbeat                # Camera heartbeat webhook
 ### ✅ Phase 5: Testing & Documentation (Complete)
 - Created verification scripts (`verify_setup.py`, `verify_installation.py`)
 - Comprehensive architecture documentation
-- Unit tests pattern established (and verified)
+- Unit test pattern established
+
+### ✅ Phase 6: MQTT Processing & Logging (Complete)
+- Automated MQTT snapshot decoding and classification
+- Multi-tenant logging system for audit trails
+- Portal UI for system log monitoring
 
 ## Migration Notes
 
