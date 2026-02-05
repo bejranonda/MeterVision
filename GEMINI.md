@@ -218,6 +218,12 @@ POST   /api/installations/{id}/complete      # Complete installation
 POST   /api/installations/cameras/heartbeat  # Camera heartbeat webhook
 ```
 
+### Logs
+```
+POST   /api/logs/                            # Create a new log entry (Internal)
+GET    /api/logs/                            # Retrieve logs
+```
+
 ## Current Implementation Status
 
 ### ✅ Phase 1: Database Architecture (Complete)

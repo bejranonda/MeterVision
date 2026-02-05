@@ -12,8 +12,61 @@
 
 <body>
     <div id="app">
-        <!-- Content injected by JS -->
+        <div id="sidebar">
+            <div id="logo">MeterVision</div>
+            <nav id="main-nav">
+                <ul>
+                    <li><a href="#" data-view="dashboard"><i class="ph-fill ph-gauge"></i> Dashboard</a></li>
+                    <li><a href="#" data-view="organizations"><i class="ph-fill ph-buildings"></i> Organizations</a></li>
+                    <li><a href="#" data-view="logs"><i class="ph-fill ph-files"></i> Logs</a></li>
+                </ul>
+            </nav>
+        </div>
+        <main id="main-content">
+            <header id="main-header">
+                <div id="user-info">
+                    <!-- User info will be loaded here -->
+                </div>
+                <button id="logout-btn">Logout</button>
+            </header>
+            <div id="view-content">
+                <!-- Views will be rendered here -->
+            </div>
+        </main>
     </div>
+
+    <template id="login-template">
+        <div id="login-view">
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </template>
+    
+    <template id="dashboard-template">
+        <div id="dashboard-content">
+            <h1>Welcome to MeterVision</h1>
+            <p>Select an option from the sidebar to get started.</p>
+        </div>
+    </template>
+    
+    <template id="organizations-template">
+        <div id="organizations-content">
+            <h2>Your Organizations</h2>
+            <ul id="org-list"></ul>
+        </div>
+    </template>
+    
+    <template id="log-viewer-template">
+        <div id="log-viewer-content">
+            <h2>System Logs</h2>
+            <div id="log-entries"></div>
+        </div>
+    </template>
+
     <script type="module" src="/static/app.js"></script>
 </body>
 

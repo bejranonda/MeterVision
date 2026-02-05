@@ -12,6 +12,7 @@ from .asset import (
     Project, Customer, Building, Place, Meter, Reading,
     ProjectBase, CustomerBase, BuildingBase, PlaceBase, MeterBase, ReadingBase
 )
+from .log import Log, LogCreate, LogRead
 
 # For backward compatibility, export all at package level
 __all__ = [
@@ -56,5 +57,9 @@ __all__ = [
     "PlaceBase",
     "MeterBase",
     "ReadingBase",
+    # Log models
+    "Log",
+    "LogCreate",
+    "LogRead",
 ]
 
