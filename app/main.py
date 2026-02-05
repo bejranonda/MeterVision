@@ -47,7 +47,6 @@ app.include_router(installation.router)
 # Create uploads directory if not exists
 os.makedirs("uploads", exist_ok=True)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.on_event("startup")
@@ -93,16 +92,16 @@ def get_db():
     return next(get_session())
 
 # Mount Static Files
-app.mount("/static", StaticFiles(directory="/home/ogema/MeterReading/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def read_index():
-    return FileResponse("/home/ogema/MeterReading/static/index.html")
+    return FileResponse("static/index.html")
 
 @app.get("/installer")
 async def read_installer():
     """Serve the installer interface."""
-    return FileResponse("/home/ogema/MeterReading/static/installer.html")
+    return FileResponse("static/installer.html")
 
 # --- Auth ---
 @app.post("/token")
