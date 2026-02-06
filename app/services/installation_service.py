@@ -100,7 +100,13 @@ class InstallationService:
             raise ValueError(f"Installation session {installation_session_id} not found")
         
         camera = session.get(Camera, installation.camera_id)
-        results = {}
+        # Initialize all results with a default "not_run" state to prevent frontend crashes
+        results = {
+            "connection": {"passed": False, "message": "Waiting..."},
+            "fov": {"passed": False, "message": "Waiting..."},
+            "glare": {"passed": False, "message": "Waiting..."},
+            "ocr": {"passed": False, "message": "Waiting..."}
+        }
         
         # Step 1: Connection Test
         connection_check = InstallationService._run_connection_test(
@@ -110,6 +116,7 @@ class InstallationService:
         
         if not connection_check["passed"]:
             installation.status = InstallationStatusEnum.FAILED.value
+            installation.validation_results_json = json.dumps(results)
             session.add(installation)
             session.commit()
             return results
@@ -119,7 +126,6 @@ class InstallationService:
         session.commit()
         
         # Step 2: FOV Validation
-        # In production, capture test image from camera
         test_image_path = CameraService.capture_test_image(camera.serial_number)
         
         fov_check = InstallationService._run_fov_validation(
@@ -129,6 +135,7 @@ class InstallationService:
         
         if not fov_check["passed"]:
             installation.status = InstallationStatusEnum.FAILED.value
+            installation.validation_results_json = json.dumps(results)
             session.add(installation)
             session.commit()
             return results
@@ -143,11 +150,6 @@ class InstallationService:
         )
         results["glare"] = glare_check
         
-        if not glare_check["passed"]:
-            # Glare is a warning, not a hard failure
-            # Continue with installation but mark in results
-            pass
-        
         installation.status = InstallationStatusEnum.GLARE_CHECK_PASSED.value
         session.add(installation)
         session.commit()
@@ -160,11 +162,8 @@ class InstallationService:
         
         if not ocr_check["passed"]:
             installation.status = InstallationStatusEnum.FAILED.value
-            session.add(installation)
-            session.commit()
-            return results
-        
-        installation.status = InstallationStatusEnum.OCR_VALIDATED.value
+        else:
+            installation.status = InstallationStatusEnum.OCR_VALIDATED.value
         
         # Store all results
         installation.validation_results_json = json.dumps(results)

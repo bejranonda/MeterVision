@@ -22,6 +22,7 @@ class StartInstallationRequest(BaseModel):
     meter_type: str
     meter_unit: str
     meter_location: Optional[str] = None
+    expected_reading: Optional[float] = None
     organization_id: int
 
 
@@ -89,7 +90,8 @@ async def start_installation(
                 serial_number=request.meter_serial,
                 meter_type=request.meter_type,
                 unit=request.meter_unit,
-                location=request.meter_location or "",
+                location=request.meter_location,
+                expected_reading=request.expected_reading,
                 organization_id=request.organization_id,
                 place_id=None  # Can be set later
             )

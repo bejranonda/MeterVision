@@ -87,6 +87,7 @@ class MeterBase(SQLModel):
     serial_number: str = Field(index=True, unique=True)
     meter_type: str  # Gas, Electricity, Heat
     unit: str  # m3, kWh
+    location: Optional[str] = None  # Physical location description
     place_id: Optional[int] = Field(default=None, foreign_key="place.id")
     organization_id: int = Field(foreign_key="organization.id", index=True)
     aoi_config: Optional[str] = None  # JSON string for AOI coordinates

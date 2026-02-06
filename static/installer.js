@@ -347,15 +347,19 @@ async function handleMeterForm(e) {
                 meter_type: installationData.meterType,
                 meter_unit: installationData.meterUnit,
                 organization_id: installationData.organizationId,
+                expected_reading: parseFloat(installationData.expectedReading) || 0,
                 meter_location: installationData.meterLocation
             })
         });
+
+        if (!response.session_id) throw new Error('No session ID returned');
 
         installationData.sessionId = response.session_id;
         goToStep(4);
         await runValidation();
     } catch (error) {
-        alert('Failed: ' + error.message);
+        console.error('Meter Form Error:', error);
+        alert('Failed: ' + (error.message || 'Unknown error occurred'));
     }
 }
 
@@ -368,20 +372,30 @@ async function runValidation() {
 
     try {
         const response = await apiCall(`/api/installations/${installationData.sessionId}/validate`, { method: 'POST' });
-        const results = response.validation_results;
+        const results = response.validation_results || {};
 
-        updateValidationUI('connection', results.connection);
-        await delay(300);
-        updateValidationUI('fov', results.fov);
-        await delay(300);
-        updateValidationUI('glare', results.glare);
-        await delay(300);
-        updateValidationUI('ocr', results.ocr);
+        // Always update all UIs, even if missing in response (will show "Failed" by default)
+        const checks = ['connection', 'fov', 'glare', 'ocr'];
+        checks.forEach(check => {
+            if (results[check]) {
+                updateValidationUI(check, results[check]);
+            } else {
+                // Not run or missing
+                updateValidationUI(check, { passed: false, message: 'Check not performed' });
+            }
+        });
 
-        const allPassed = results.connection.passed && results.fov.passed && results.ocr.passed;
+        const allPassed = results.connection?.passed && results.fov?.passed && results.ocr?.passed;
         document.getElementById('validate-continue-btn').disabled = !allPassed;
     } catch (error) {
-        console.error(error);
+        console.error('Validation Error:', error);
+        // Stop all spinners on error
+        document.querySelectorAll('.validation-item.pending').forEach(item => {
+            item.classList.remove('pending');
+            item.classList.add('failed');
+            const status = item.querySelector('.validation-status');
+            if (status) status.textContent = 'Error during validation';
+        });
     }
 }
 
