@@ -42,7 +42,17 @@ async function fetchUserInfo() {
 function renderAppLayout() {
     const appElement = document.getElementById('app');
     const appLayoutTemplate = document.getElementById('app-layout-template');
-    appElement.innerHTML = appLayoutTemplate.innerHTML;
+    
+    // Clear existing content in #app
+    appElement.innerHTML = '';
+    
+    // Clone the template content and append it
+    if (appLayoutTemplate && appLayoutTemplate.content) {
+        appElement.appendChild(appLayoutTemplate.content.cloneNode(true));
+    } else {
+        console.error('App layout template or its content not found!');
+        // Fallback or error handling if template is missing
+    }
 
     document.querySelector('#main-nav').addEventListener('click', e => {
         if (e.target.tagName === 'A' && e.target.dataset.view) {
