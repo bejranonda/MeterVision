@@ -12,3 +12,12 @@ mosquitto/certs/*.key
 mosquitto/certs/*.srl
 mosquitto/certs/*.csr
 mosquitto/certs/*.crt
+
+# Added by Gemini
+create_default_org.py
+mosquitto/config/passwd
+mosquitto/data/
+mosquitto/log/
+mqtt_listener.log
+mqtt_listener.pid
+test_validate.py
