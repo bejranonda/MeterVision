@@ -85,6 +85,26 @@ def on_startup():
             session.add(user)
             session.commit()
             print(f"✅ Updated Super Admin user: {admin_username}")
+        
+        # Ensure default organization exists
+        from .models import Organization
+        default_org = session.exec(
+            select(Organization).where(Organization.subdomain == "undefined")
+        ).first()
+        
+        if not default_org:
+            default_org = Organization(
+                name="Undefined Organization",
+                subdomain="undefined",
+                is_active=True,
+                billing_status="active"
+            )
+            session.add(default_org)
+            session.commit()
+            session.refresh(default_org)
+            print(f"✅ Created default organization: Undefined Organization (ID: {default_org.id})")
+        else:
+            print(f"✅ Default organization exists: {default_org.name} (ID: {default_org.id})")
 
 
 # Dependency
@@ -206,10 +226,22 @@ def read_places(session: Session = Depends(get_session), current_user: User = De
 def create_meter(meter: MeterBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Create a new meter within an organization."""
     from .services.rbac_service import RBACService
-    from .models import UserRoleEnum
+    from .models import UserRoleEnum, Organization
+    
+    # Use default organization if none specified
+    org_id = meter.organization_id
+    if not org_id:
+        default_org = session.exec(
+            select(Organization).where(Organization.subdomain == "undefined")
+        ).first()
+        if default_org:
+            org_id = default_org.id
+        else:
+            # Fallback to ID 1 if undefined org doesn't exist
+            org_id = 1
     
     # Verify user has access to the organization
-    user_role = RBACService.get_user_role_in_org(current_user.id, meter.organization_id, session)
+    user_role = RBACService.get_user_role_in_org(current_user.id, org_id, session)
     
     if not user_role and current_user.platform_role not in [UserRoleEnum.SUPER_ADMIN.value, UserRoleEnum.PLATFORM_MANAGER.value]:
         raise HTTPException(
@@ -217,7 +249,10 @@ def create_meter(meter: MeterBase, session: Session = Depends(get_session), curr
             detail="You don't have access to this organization"
         )
     
-    db_meter = Meter.model_validate(meter)
+    # Create meter with resolved organization_id
+    meter_dict = meter.dict()
+    meter_dict['organization_id'] = org_id
+    db_meter = Meter(**meter_dict)
     session.add(db_meter)
     session.commit()
     session.refresh(db_meter)

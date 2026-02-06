@@ -30,7 +30,8 @@
             <nav id="main-nav">
                 <ul>
                     <li><a href="#" data-view="dashboard"><i class="ph-fill ph-squares-four"></i> Dashboard</a></li>
-                    <li><a href="#" data-view="organizations"><i class="ph-fill ph-buildings"></i> Organizations</a></li>
+                    <li><a href="#" data-view="organizations"><i class="ph-fill ph-buildings"></i> Organizations</a>
+                    </li>
                     <li><a href="#" data-view="meters"><i class="ph-fill ph-gauge"></i> Meters</a></li>
                     <li><a href="#" data-view="logs"><i class="ph-fill ph-scroll"></i> Logs</a></li>
                     <li><a href="#" data-view="settings"><i class="ph-fill ph-gear"></i> Settings</a></li>
@@ -42,7 +43,7 @@
                 </button>
             </div>
         </div>
-        
+
         <main id="main-content">
             <!-- Mobile Overlay -->
             <div id="sidebar-overlay" class="modal-overlay"></div>
@@ -54,7 +55,7 @@
                     </button>
                     <h2 id="page-title" style="margin: 0; font-size: 1.25rem;">Dashboard</h2>
                 </div>
-                
+
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <button class="btn btn-icon btn-secondary">
                         <i class="ph-bold ph-bell"></i>
@@ -64,7 +65,7 @@
                     </div>
                 </div>
             </header>
-            
+
             <div id="view-content">
                 <!-- Views will be rendered here -->
             </div>
@@ -90,27 +91,30 @@
                 <h1 style="margin-top: 1rem;">MeterVision</h1>
                 <p class="text-muted">Enterprise Meter Management</p>
             </div>
-            
+
             <form id="login-form">
                 <div class="form-group">
                     <label class="form-label">Username</label>
                     <div style="position: relative;">
-                        <i class="ph-bold ph-user" style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
+                        <i class="ph-bold ph-user"
+                            style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
                         <input type="text" id="username" placeholder="Username" style="padding-left: 2.5rem;" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Password</label>
                     <div style="position: relative;">
-                        <i class="ph-bold ph-lock" style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
-                        <input type="password" id="password" placeholder="Password" style="padding-left: 2.5rem;" required>
+                        <i class="ph-bold ph-lock"
+                            style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
+                        <input type="password" id="password" placeholder="Password" style="padding-left: 2.5rem;"
+                            required>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
             </form>
         </div>
     </template>
-    
+
     <!-- Dashboard Template -->
     <template id="dashboard-template">
         <div class="dashboard-grid">
@@ -152,13 +156,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="4" class="text-muted" style="text-align: center;">Loading activity...</td></tr>
+                        <tr>
+                            <td colspan="4" class="text-muted" style="text-align: center;">Loading activity...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </template>
-    
+
     <!-- Organizations Template -->
     <template id="organizations-template">
         <div class="card">
@@ -255,13 +261,14 @@
             </div>
         </div>
     </template>
-    
+
     <!-- Logs Template -->
     <template id="log-viewer-template">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">System Logs</h3>
-                <button class="btn btn-secondary btn-sm" id="refresh-logs"><i class="ph-bold ph-arrows-clockwise"></i> Refresh</button>
+                <button class="btn btn-secondary btn-sm" id="refresh-logs"><i class="ph-bold ph-arrows-clockwise"></i>
+                    Refresh</button>
             </div>
             <div id="log-entries"></div>
         </div>
@@ -283,17 +290,23 @@
                 <input type="text" name="serial_number" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Organization ID</label>
-                <input type="number" name="organization_id" required>
+                <label class="form-label">Organization ID (Optional)</label>
+                <input type="number" name="organization_id" placeholder="Leave empty for default">
+                <small class="text-muted">Leave empty to use default "Undefined Organization"</small>
             </div>
             <div class="form-group">
                 <label class="form-label">Type</label>
-                <select name="meter_type">
-                    <option value="Electricity">Electricity</option>
-                    <option value="Gas">Gas</option>
-                    <option value="Water">Water</option>
-                    <option value="Heat">Heat</option>
-                </select>
+                <input type="text" name="meter_type" list="meter-types" required
+                    placeholder="Select or type custom type">
+                <datalist id="meter-types">
+                    <option value="Electricity">
+                    <option value="Gas">
+                    <option value="Water">
+                    <option value="Heat">
+                    <option value="CO2">
+                    <option value="Pressure">
+                    <option value="Temperature">
+                </datalist>
             </div>
             <div class="form-group">
                 <label class="form-label">Unit</label>

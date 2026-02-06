@@ -123,11 +123,23 @@ def decode_and_save_image(json_payload_str):
                 # Auto-create meter if not exists (simple auto-provisioning logic)
                 if read_res.status_code == 404 and token:
                     log_message("INFO", f"Meter {dev_mac_raw} not found. Attempting auto-provisioning.", {})
+                    
+                    # Get default organization ID
+                    org_res = requests.get("http://127.0.0.1:8000/api/organizations/", headers=headers, timeout=5)
+                    default_org_id = 1  # Fallback
+                    if org_res.status_code == 200:
+                        orgs = org_res.json()
+                        # Find "undefined" organization
+                        for org in orgs:
+                            if org.get("subdomain") == "undefined":
+                                default_org_id = org["id"]
+                                break
+                    
                     create_meter_payload = {
                         "serial_number": dev_mac_raw,
                         "meter_type": "Electricity", # Default
                         "unit": "kWh",
-                        "organization_id": 1 # Default legacy org
+                        "organization_id": default_org_id
                     }
                     create_res = requests.post(
                         "http://127.0.0.1:8000/meters/", 
