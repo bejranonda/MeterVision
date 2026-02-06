@@ -3,6 +3,7 @@ const state = {
     user: null,
     currentView: 'dashboard',
     organizations: [],
+    meters: [], // Added for meters
     logs: [],
 };
 
@@ -79,6 +80,10 @@ function renderAppLayout() {
 
 async function renderMainView() {
     const viewContent = document.getElementById('view-content');
+    if (!viewContent) {
+        console.error('View content element not found!');
+        return;
+    }
     
     // Highlight active nav link
     document.querySelectorAll('#main-nav a').forEach(link => {
@@ -87,23 +92,60 @@ async function renderMainView() {
 
     switch (state.currentView) {
         case 'dashboard':
-            viewContent.innerHTML = document.getElementById('dashboard-template').innerHTML;
+            const dashboardTemplate = document.getElementById('dashboard-template');
+            if (dashboardTemplate) {
+                viewContent.innerHTML = dashboardTemplate.innerHTML;
+            } else {
+                viewContent.innerHTML = '<p>Dashboard template not found.</p>';
+            }
             break;
         case 'organizations':
-            viewContent.innerHTML = document.getElementById('organizations-template').innerHTML;
-            await renderOrganizationsView();
+            const organizationsTemplate = document.getElementById('organizations-template');
+            if (organizationsTemplate) {
+                viewContent.innerHTML = organizationsTemplate.innerHTML;
+                await renderOrganizationsView();
+            } else {
+                viewContent.innerHTML = '<p>Organizations template not found.</p>';
+            }
+            break;
+        case 'meters': // New case for meters
+            const metersTemplate = document.getElementById('meters-template');
+            if (metersTemplate) {
+                viewContent.innerHTML = metersTemplate.innerHTML;
+                await renderMetersView();
+            } else {
+                viewContent.innerHTML = '<p>Meters template not found.</p>';
+            }
             break;
         case 'logs':
-            viewContent.innerHTML = document.getElementById('log-viewer-template').innerHTML;
-            await renderLogsView();
+            const logViewerTemplate = document.getElementById('log-viewer-template');
+            if (logViewerTemplate) {
+                viewContent.innerHTML = logViewerTemplate.innerHTML;
+                await renderLogsView();
+            } else {
+                viewContent.innerHTML = '<p>Log viewer template not found.</p>';
+            }
+            break;
+        default:
+            viewContent.innerHTML = '<h2>Page Not Found</h2>';
             break;
     }
 }
 
 function renderLoginView() {
     const appElement = document.getElementById('app');
-    appElement.innerHTML = document.getElementById('login-template').innerHTML;
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    const loginTemplate = document.getElementById('login-template');
+    if (appElement && loginTemplate) {
+        appElement.innerHTML = loginTemplate.innerHTML;
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+        } else {
+            console.warn('Login form not found in login template.');
+        }
+    } else {
+        console.error('App element or login template not found.');
+    }
 }
 
 async function handleLogin(e) {
@@ -160,7 +202,11 @@ async function renderOrganizationsView() {
         if(response.ok) {
             state.organizations = await response.json();
             const orgList = document.getElementById('org-list');
-            orgList.innerHTML = state.organizations.map(org => `<li>${org.name}</li>`).join('');
+            if (orgList) {
+                orgList.innerHTML = state.organizations.map(org => `<li>${org.name}</li>`).join('');
+            } else {
+                console.warn('Organization list element not found.');
+            }
         } else {
             document.getElementById('org-list').innerHTML = '<li>Could not fetch organizations.</li>';
         }
@@ -169,8 +215,61 @@ async function renderOrganizationsView() {
     }
 }
 
+async function renderMetersView() {
+    const metersListContainer = document.getElementById('meters-list');
+    if (!metersListContainer) {
+        console.error('Meters list container not found!');
+        return;
+    }
+    metersListContainer.innerHTML = '<p>Loading meters...</p>';
+
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/meters_list/`);
+        if (response.ok) {
+            state.meters = await response.json();
+            if (state.meters.length === 0) {
+                metersListContainer.innerHTML = '<p>No meters found.</p>';
+                return;
+            }
+            metersListContainer.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Serial Number</th>
+                            <th>Type</th>
+                            <th>Unit</th>
+                            <th>Location</th>
+                            <th>Organization ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${state.meters.map(meter => `
+                            <tr>
+                                <td>${meter.serial_number}</td>
+                                <td>${meter.meter_type}</td>
+                                <td>${meter.unit}</td>
+                                <td>${meter.location || 'N/A'}</td>
+                                <td>${meter.organization_id}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else {
+            metersListContainer.innerHTML = '<p>Failed to load meters.</p>';
+        }
+    } catch (error) {
+        console.error('Failed to fetch meters:', error);
+        metersListContainer.innerHTML = '<p>An error occurred while fetching meters.</p>';
+    }
+}
+
 async function renderLogsView() {
     const logEntriesContainer = document.getElementById('log-entries');
+    if (!logEntriesContainer) {
+        console.error('Log entries container not found!');
+        return;
+    }
     logEntriesContainer.innerHTML = '<p>Loading logs...</p>';
 
     try {
