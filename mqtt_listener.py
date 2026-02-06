@@ -16,8 +16,10 @@ MQTT_TOPIC = "v1/devices/me/telemetry" # Standard topic for these types of sensi
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print(f"✅ Connected to MQTT Broker at {MQTT_BROKER}", flush=True)
-        client.subscribe(MQTT_TOPIC)
-        print(f"📡 Subscribed to topic: {MQTT_TOPIC}", flush=True)
+        # Subscribe to both topics
+        client.subscribe("v1/devices/me/telemetry")
+        client.subscribe("NE101SensingCam/Snapshot")
+        print(f"📡 Subscribed to topics: v1/devices/me/telemetry, NE101SensingCam/Snapshot", flush=True)
     else:
         print(f"❌ Connection failed with code {rc}", flush=True)
 
