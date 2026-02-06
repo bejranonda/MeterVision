@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select, SQLModel
 from typing import List, Optional
-from datetime import timedelta
+from datetime import datetime, timedelta
 from .database import create_db_and_tables, get_session
 from .models import (
     # Asset hierarchy
@@ -316,6 +316,55 @@ async def upload_reading(
         organization_id=meter.organization_id,  # Set from meter's organization
         status="Verified",
         ocr_confidence=1.0
+    )
+    session.add(reading)
+    session.commit()
+    session.refresh(reading)
+    return reading
+
+class ReadingCreate(SQLModel):
+    value: float
+    timestamp: datetime
+    image_path: str
+
+@app.post("/meters/{serial_number}/reading_data", response_model=Reading)
+def create_reading_data(
+    serial_number: str, 
+    reading_data: ReadingCreate, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Create a reading record directly (for edge devices that already processed the image).
+    """
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    # 1. Verify Meter Exists
+    meter = session.exec(select(Meter).where(Meter.serial_number == serial_number)).first()
+    if not meter:
+        raise HTTPException(status_code=404, detail="Meter not found")
+    
+    # Check organization access
+    if current_user.platform_role != UserRoleEnum.SUPER_ADMIN.value:
+        user_orgs = RBACService.get_user_organizations(current_user, session)
+        org_ids = [org.id for org in user_orgs]
+        
+        if meter.organization_id not in org_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have access to this meter's organization"
+            )
+
+    # 2. Save Reading
+    reading = Reading(
+        value=reading_data.value,
+        timestamp=reading_data.timestamp,
+        raw_image_path=reading_data.image_path,
+        meter_id=meter.id,
+        organization_id=meter.organization_id,
+        status="Verified",
+        ocr_confidence=1.0 # Assumed high confidence from edge
     )
     session.add(reading)
     session.commit()

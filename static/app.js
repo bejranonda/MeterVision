@@ -191,8 +191,43 @@ async function renderDashboard(container) {
 
             document.getElementById('stat-active-meters').textContent = meters.length;
             document.getElementById('stat-organizations').textContent = orgs.length;
-            // Fake "Readings Today" for now
-            document.getElementById('stat-readings-today').textContent = Math.floor(Math.random() * 20);
+
+            // Fetch readings for each meter to get "Readings Today" and "Recent Activity"
+            let allReadings = [];
+            for (const meter of meters) {
+                try {
+                    const readingsRes = await fetchWithAuth(`${API_BASE_URL}/meters/${meter.serial_number}/readings`);
+                    if (readingsRes.ok) {
+                        const readings = await readingsRes.json();
+                        allReadings = allReadings.concat(readings.map(r => ({ ...r, serial: meter.serial_number })));
+                    }
+                } catch (e) { /* ignore individual failures */ }
+            }
+
+            // Calculate "Readings Today"
+            const today = new Date().toDateString();
+            const readingsToday = allReadings.filter(r => new Date(r.timestamp).toDateString() === today);
+            document.getElementById('stat-readings-today').textContent = readingsToday.length;
+
+            // Recent Activity (last 5 readings)
+            allReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const recentActivity = allReadings.slice(0, 5);
+
+            const activityTable = document.querySelector('#recent-activity-table tbody');
+            if (activityTable) {
+                if (recentActivity.length === 0) {
+                    activityTable.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align: center;">No recent activity</td></tr>';
+                } else {
+                    activityTable.innerHTML = recentActivity.map(r => `
+                        <tr>
+                            <td>${new Date(r.timestamp).toLocaleString()}</td>
+                            <td>Meter Reading</td>
+                            <td>${r.serial}: <strong>${r.value}</strong></td>
+                            <td><span class="badge badge-success">Verified</span></td>
+                        </tr>
+                    `).join('');
+                }
+            }
         }
     } catch (e) {
         console.error("Dashboard data load error", e);
@@ -340,13 +375,21 @@ function renderReadingsTable(readings) {
     const tbody = document.querySelector('#readings-table tbody');
     if (!tbody) return;
 
-    tbody.innerHTML = readings.slice(0, 10).map(r => `
-        <tr>
-            <td>${new Date(r.timestamp).toLocaleDateString()} ${new Date(r.timestamp).toLocaleTimeString()}</td>
-            <td style="font-weight: 600;">${r.value}</td>
-            <td><a href="/${r.raw_image_path}" target="_blank" class="text-info">View</a></td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = readings.slice(0, 10).map(r => {
+        // Handle both full paths (/home/ogema/...) and relative paths (/uploads/...)
+        let imagePath = r.raw_image_path;
+        if (imagePath.startsWith('/home/ogema/MeterReading/')) {
+            imagePath = imagePath.replace('/home/ogema/MeterReading', '');
+        }
+
+        return `
+            <tr>
+                <td>${new Date(r.timestamp).toLocaleDateString()} ${new Date(r.timestamp).toLocaleTimeString()}</td>
+                <td style="font-weight: 600;">${r.value}</td>
+                <td><a href="${imagePath}" target="_blank" class="text-info">View</a></td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function renderReadingsChart(readings) {

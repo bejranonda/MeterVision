@@ -35,6 +35,8 @@ def on_message(client, userdata, msg):
         
         if result.returncode == 0:
             print(f"✅ Successfully processed message: {result.stdout.strip()}", flush=True)
+            if result.stderr:
+                print(f"⚠️ Warnings: {result.stderr.strip()}", flush=True)
         else:
             print(f"❌ Error processing message: {result.stderr.strip()}", flush=True)
             
