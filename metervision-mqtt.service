@@ -1,0 +1,16 @@
+[Unit]
+Description=MeterVision MQTT Listener
+After=network.target meterreading_mqtt_1.service
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/home/ogema/MeterReading
+Environment="PATH=/home/ogema/MeterReading/venv/bin"
+EnvironmentFile=/home/ogema/MeterReading/.env.local
+ExecStart=/home/ogema/MeterReading/venv/bin/python3 -u mqtt_listener.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
