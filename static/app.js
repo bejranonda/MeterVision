@@ -43,33 +43,38 @@ function renderAppLayout() {
     const appElement = document.getElementById('app');
     const appLayoutTemplate = document.getElementById('app-layout-template');
     
-    // Clear existing content in #app
+    // Always clear existing content in #app
     appElement.innerHTML = '';
     
     // Clone the template content and append it
-        if (appLayoutTemplate && appLayoutTemplate.content) {
-            appElement.appendChild(appLayoutTemplate.content.cloneNode(true));
-            
-            // Attach event listeners to the newly rendered elements
-            document.querySelector('#main-nav').addEventListener('click', e => {
-                if (e.target.tagName === 'A' && e.target.dataset.view) {
-                    e.preventDefault();
-                    navigateTo(e.target.dataset.view);
-                }
-            });
-    
-            document.getElementById('logout-btn').addEventListener('click', logout);
-            
-            const userInfoElement = document.getElementById('user-info');
-            // Only update if user info exists and element is found
-            if (state.user && userInfoElement) {
-                userInfoElement.textContent = `Welcome, ${state.user.username}`;
-            }
-        } else {
-            console.error('App layout template or its content not found!');
-            // Fallback or error handling if template is missing
+    if (appLayoutTemplate && appLayoutTemplate.content) {
+        appElement.appendChild(appLayoutTemplate.content.cloneNode(true));
+    } else {
+        console.error('App layout template or its content not found!');
+        // Fallback or error handling if template is missing
+        return; // Exit if template is not found
+    }
+
+    // Attach event listeners to the newly rendered elements
+    document.querySelector('#main-nav').addEventListener('click', e => {
+        if (e.target.tagName === 'A' && e.target.dataset.view) {
+            e.preventDefault();
+            navigateTo(e.target.dataset.view);
         }
+    });
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    } else {
+        console.warn('Logout button not found in rendered layout.');
+    }
     
+    const userInfoElement = document.getElementById('user-info');
+    // Only update if user info exists and element is found
+    if (state.user && userInfoElement) {
+        userInfoElement.textContent = `Welcome, ${state.user.username}`;
+    }
 }
 
 async function renderMainView() {
