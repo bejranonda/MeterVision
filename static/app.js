@@ -353,6 +353,36 @@ async function renderMeterDetail(container, params) {
         // Load Readings & Chart
         loadReadings(meter.serial_number);
 
+        // Delete Meter Handler
+        const deleteBtn = document.getElementById('delete-meter-btn');
+        if (deleteBtn) {
+            // Remove existing listener to prevent duplicates
+            const newDeleteBtn = deleteBtn.cloneNode(true);
+            deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+
+            newDeleteBtn.addEventListener('click', async () => {
+                if (confirm(`Are you sure you want to delete meter ${meter.serial_number}? This action cannot be undone.`)) {
+                    try {
+                        const res = await fetchWithAuth(`${API_BASE_URL}/meters/${meter.id}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (res.ok) {
+                            alert('Meter deleted successfully');
+                            closeModal();
+                            renderMetersList(); // Refresh list
+                        } else {
+                            const err = await res.json();
+                            alert(`Failed to delete meter: ${err.detail || 'Unknown error'}`);
+                        }
+                    } catch (e) {
+                        console.error("Delete error:", e);
+                        alert("Error deleting meter");
+                    }
+                }
+            });
+        }
+
     } catch (e) {
         container.innerHTML = `<div class="text-error">${e.message}</div>`;
     }

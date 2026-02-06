@@ -258,6 +258,31 @@ def create_meter(meter: MeterBase, session: Session = Depends(get_session), curr
     session.refresh(db_meter)
     return db_meter
 
+@app.delete("/meters/{meter_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_meter(meter_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    """Delete a meter."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+    
+    meter = session.get(Meter, meter_id)
+    if not meter:
+        raise HTTPException(status_code=404, detail="Meter not found")
+        
+    # Verify user has access to the organization
+    user_role = RBACService.get_user_role_in_org(current_user.id, meter.organization_id, session)
+    
+    # Allow Super Admin, Platform Manager, or Org Manager to delete
+    if not (current_user.platform_role in [UserRoleEnum.SUPER_ADMIN.value, UserRoleEnum.PLATFORM_MANAGER.value] or 
+            user_role == UserRoleEnum.ORG_MANAGER.value):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete this meter"
+        )
+    
+    session.delete(meter)
+    session.commit()
+    return None
+
 @app.get("/meters_list/", response_model=List[Meter])
 def read_all_meters(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Get all meters accessible to the current user."""
