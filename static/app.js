@@ -41,8 +41,8 @@ async function fetchUserInfo() {
 
 function renderAppLayout() {
     const appElement = document.getElementById('app');
-    appElement.innerHTML = document.getElementById('sidebar').innerHTML +
-                           document.getElementById('main-content').innerHTML;
+    const appLayoutTemplate = document.getElementById('app-layout-template');
+    appElement.innerHTML = appLayoutTemplate.innerHTML;
 
     document.querySelector('#main-nav').addEventListener('click', e => {
         if (e.target.tagName === 'A' && e.target.dataset.view) {
