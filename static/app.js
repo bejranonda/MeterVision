@@ -429,7 +429,62 @@ async function renderOrganizations(container) {
 async function renderLogs(container) {
     const template = document.getElementById('log-viewer-template');
     container.innerHTML = template.innerHTML;
-    // ... fetch logic
+
+    const logContainer = document.getElementById('log-entries');
+    logContainer.innerHTML = '<div class="text-muted" style="padding: 1rem;">Loading logs...</div>';
+
+    const renderEntries = async () => {
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/logs/?limit=50`);
+            if (response.ok) {
+                const logs = await response.json();
+                if (logs.length === 0) {
+                    logContainer.innerHTML = '<div class="text-muted" style="padding: 1rem;">No logs found.</div>';
+                    return;
+                }
+
+                // Sort logs by date descending (to be safe, though API usually does it)
+                logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                logContainer.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Level</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${logs.map(log => `
+                                <tr>
+                                    <td class="text-muted" style="white-space: nowrap;">${new Date(log.created_at).toLocaleString()}</td>
+                                    <td><span class="status-badge status-${log.level.toLowerCase()}">${log.level}</span></td>
+                                    <td>
+                                        <div style="font-weight: 500;">${log.message}</div>
+                                        ${log.details && Object.keys(log.details).length > 0 ?
+                        `<pre style="font-size: 0.75rem; margin-top: 0.5rem; background: #f8f9fa; padding: 0.5rem; border-radius: 4px; overflow: auto; max-width: 400px;">${JSON.stringify(log.details, null, 2)}</pre>`
+                        : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                logContainer.innerHTML = '<div class="text-error" style="padding: 1rem;">Failed to load logs.</div>';
+            }
+        } catch (error) {
+            logContainer.innerHTML = `<div class="text-error" style="padding: 1rem;">Error: ${error.message}</div>`;
+        }
+    };
+
+    renderEntries();
+
+    document.getElementById('refresh-logs').addEventListener('click', () => {
+        logContainer.innerHTML = '<div class="text-muted" style="padding: 1rem;">Refreshing...</div>';
+        renderEntries();
+    });
 }
 
 function renderSettings(container) {

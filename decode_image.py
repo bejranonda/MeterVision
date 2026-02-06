@@ -20,11 +20,12 @@ def log_message(level, message, details):
 
     for attempt in range(max_retries):
         try:
-            response = requests.post("http://localhost:8000/api/logs/", json=log_data)
+            # Use 127.0.0.1 to avoid ipv6/ipv4 resolution issues in some environments
+            response = requests.post("http://127.0.0.1:8000/api/logs/", json=log_data, timeout=5)
             if response.status_code == 201:
                 return # Success
             else:
-                print(f"Failed to log message (attempt {attempt + 1}/{max_retries}): {response.text}", file=sys.stderr)
+                print(f"Failed to log message (status {response.status_code}): {response.text}", file=sys.stderr)
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to logging service (attempt {attempt + 1}/{max_retries}): {e}", file=sys.stderr)
         
