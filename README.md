@@ -71,6 +71,43 @@ MeterVision uses a sophisticated **voting ensemble** to ensure maximum accuracy:
 
 ---
 
+## 🏗️ System Architecture
+
+MeterVision runs as a coordinated stack of three primary services:
+
+1.  **FastAPI Backend** (`metervision.service`): The core API, RBAC engine, and dashboard server.
+2.  **MQTT Listener** (`metervision-mqtt.service`): An asynchronous gateway that captures snapshots and telemetry from IoT cameras.
+3.  **MQTT Broker** (Docker): A `mosquitto` instance that facilitates communication between cameras and the listener.
+
+---
+
+## ⚙️ Service Management
+
+The application is managed via `systemd` and `docker-compose`.
+
+### Backend & Listener (Systemd)
+```bash
+# Check status of all services
+systemctl status metervision metervision-mqtt
+
+# View live logs for the MQTT gateway
+journalctl -u metervision-mqtt -f
+
+# Restart services
+sudo systemctl restart metervision metervision-mqtt
+```
+
+### MQTT Broker (Docker)
+```bash
+# Start the broker
+docker-compose up -d mqtt
+
+# Check broker logs
+docker-compose logs -f mqtt
+```
+
+---
+
 ## ⚡ Quick Start
 
 ### 1. Initial Setup

@@ -1,7 +1,13 @@
 # MeterVision Technical Architecture
 
 ## 🏛️ System Overview
-MeterVision is a modular FastAPI application designed for high scalability and secure multi-tenancy.
+MeterVision is a coordinated ecosystem of services working together to provide real-time meter reading and management.
+
+### Platform Components
+- **API Backend**: FastAPI application serving the dashboard and mobile installer.
+- **IoT Listener**: Python-based MQTT subscriber for capturing device data.
+- **MQTT Broker**: Eclipse Mosquitto (Docker-based) for device communication.
+- **Database**: SQLModel/SQLite (mapped to PostgreSQL in production).
 
 ## 🏗️ Backend Structure
 The backend is organized into functional layers:
@@ -37,11 +43,20 @@ MeterVision uses a **"Modern Vanilla"** approach to front-end development:
 - **Design System**: A custom CSS-variable-based theme (Glassmorphism) that supports both mobile and desktop seamlessly.
 - **Data Visualization**: Integrated `Chart.js` for real-time historic data plotting.
 
-## 📡 MQTT Integration
-For cameras that transmit via MQTT:
-- **Base64 Decoding**: Snapshots are received as base64 strings.
-- **Automated Filing**: Images are stored in `/uploads/{camera_serial}/{timestamp}.jpg`.
-- **Async Processing**: Incoming snapshots trigger OCR processing in the background.
+## 📡 MQTT Gateway & IoT Workflow
+The `metervision-mqtt` service acts as the bridge between physical sensors and the AI backend.
+
+### Communication Flow:
+1.  **Device Trigger**: An IoT camera (e.g., NE101) takes a photo and publishes to `NE101SensingCam/Snapshot`.
+2.  **Listener Capture**: `mqtt_listener.py` receives the payload (usually Base64 encoded).
+3.  **Decoding**: The payload is passed to `decode_image.py` which validates the image and saves it to a tenant-scoped directory in `/uploads/`.
+4.  **Backend Notification**: The snapshot event is logged, and the backend is notified to perform OCR analysis.
+
+### Infrastructure:
+- **Broker**: Runs as a Docker container (`eclipse-mosquitto:2`) with local volume persistence for logs and data.
+- **Topics**: 
+  - `v1/devices/me/telemetry`: Device health and status.
+  - `NE101SensingCam/Snapshot`: Binary/Base64 image data.
 
 ## 🔌 API Philosophy
 - **RESTful**: standard HTTP verbs (GET, POST, PATCH, DELETE).

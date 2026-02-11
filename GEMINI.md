@@ -20,13 +20,14 @@ The project follows a modular FastAPI structure with multi-tenant support:
 │   ├── main.py              # Application entry, API routes, startup
 │   ├── database.py          # Database connection, session management
 │   ├── auth.py              # JWT authentication logic
-│   ├── models/              # Multi-tenant data models (14 tables)
+│   ├── models/              # Multi-tenant data models (15 tables)
 │   │   ├── base.py          # TimestampMixin, SoftDeleteMixin
 │   │   ├── tenant.py        # Organization, OrganizationSettings
 │   │   ├── user_rbac.py     # User, UserOrganizationRole, UserRoleEnum
 │   │   ├── device.py        # Camera, CameraHeartbeat, CameraStatusEnum
 │   │   ├── installation.py  # InstallationSession, ValidationCheck
-│   │   └── asset.py         # Project, Customer, Building, Place, Meter, Reading
+│   │   ├── asset.py         # Project, Customer, Building, Place, Meter, Reading
+│   │   └── log.py           # System logs
 │   ├── middleware/
 │   │   └── rbac.py          # PermissionChecker, get_current_user_org_context
 │   ├── services/
@@ -41,6 +42,11 @@ The project follows a modular FastAPI structure with multi-tenant support:
 ├── logs/                    # Application logs
 ├── uploads/                 # Storage for uploaded meter images
 ├── verify_setup.py          # Integration testing script
+├── mqtt_listener.py         # IoT Gateway (MQTT Subscriber)
+├── decode_image.py          # Snapshot processing logic
+├── metervision.service      # Systemd unit for Backend
+├── metervision-mqtt.service # Systemd unit for MQTT Listener
+├── docker-compose.yml       # Infrastructure orchestration (MQTT Broker)
 └── requirements.txt         # Python dependencies
 ```
 
@@ -60,8 +66,8 @@ The project follows a modular FastAPI structure with multi-tenant support:
 - **UserOrganizationRole**: Junction table for user-organization-role mapping
 - **Camera**: Device registry for meter reading cameras
 - **CameraHeartbeat**: Connectivity logs
-- **InstallationSession**: Tracks installation workflow
 - **ValidationCheck**: Individual validation step results
+- **Log**: System-wide event logging (organization-scoped)
 
 ### Multi-Tenant Isolation Strategy
 - All entities include `organization_id` foreign key for data isolation
@@ -108,11 +114,22 @@ ADMIN_PASSWORD=securepassword123
 ADMIN_EMAIL=admin@metervision.local
 ```
 
-### Running the Application
+### Running the Application (Dev)
 ```bash
 uvicorn app.main:app --reload
+python mqtt_listener.py
 ```
-- **Dashboard:** `http://localhost:8000/`
+
+### Running as Services (Production)
+```bash
+# Manage via systemd
+systemctl status metervision metervision-mqtt
+
+# Manage broker via Docker
+docker-compose up -d mqtt
+```
+
+- **Dashboard:** http://localhost:8000/
 - **API Docs:** `http://localhost:8000/docs`
 - **Super Admin** is auto-created on first startup
 

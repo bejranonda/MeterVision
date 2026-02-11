@@ -113,13 +113,28 @@ ADMIN_PASSWORD=securepassword123
 ADMIN_EMAIL=admin@metervision.local
 ```
 
-### Running the Application
+### Running the Application (Dev)
 ```bash
 uvicorn app.main:app --reload
+python mqtt_listener.py
 ```
-- **Dashboard:** `http://localhost:8000/`
-- **API Docs:** `http://localhost:8000/docs`
-- **Super Admin** is auto-created on first startup
+
+### Running as Services (Service-First Approach)
+The application is designed to run as managed `systemd` services on the host for better integration with local hardware and AI APIs.
+
+```bash
+# Backend API
+systemctl status metervision
+
+# MQTT Gateway
+systemctl status metervision-mqtt
+```
+
+### MQTT Broker (Containerized)
+The `mosquitto` broker is the only component that requires a container in the standard setup.
+```bash
+docker-compose up -d mqtt
+```
 
 ### Verification
 ```bash
