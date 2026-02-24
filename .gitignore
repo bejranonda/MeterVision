@@ -21,3 +21,4 @@ mosquitto/log/
 mqtt_listener.log
 mqtt_listener.pid
 test_validate.py
+.dev_info/
