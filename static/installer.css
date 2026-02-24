@@ -3,36 +3,33 @@
    ============================================ */
 
 :root {
-    /* Brand Colors (Matching Dashboard) */
-    --primary-color: #10B981;
-    /* Emerald 500 */
-    --primary-hover: #059669;
-    /* Emerald 600 */
-    --primary-light: #D1FAE5;
-    /* Emerald 100 */
+    /* Brand Colors (Operade Dark Theme) */
+    --primary-color: #BDFF78;
+    /* Line Green */
+    --primary-hover: #A0E060;
+    /* Darker Green for hover */
+    --primary-light: #003427;
+    /* Dark Green */
 
     --secondary-color: #3B82F6;
     /* Blue 500 */
     --secondary-hover: #2563EB;
 
     /* Backgrounds */
-    --bg-color: #F3F4F6;
-    /* Gray 100 */
-    --bg-secondary: #FFFFFF;
-    /* White */
-    --bg-tertiary: #F9FAFB;
-    /* Gray 50 */
+    --bg-color: #00120E;
+    /* Main Background */
+    --bg-secondary: #003427;
+    /* Card Background */
+    --bg-tertiary: #005A44;
+    /* Slightly lighter dark green */
 
     /* Text Colors */
-    --text-primary: #111827;
-    /* Gray 900 */
-    --text-secondary: #4B5563;
-    /* Gray 600 */
+    --text-primary: #FFFFFF;
+    --text-secondary: #BDFF78;
     --text-muted: #9CA3AF;
-    /* Gray 400 */
 
     /* Status Colors */
-    --success: #10B981;
+    --success: #BDFF78;
     --warning: #F59E0B;
     --error: #EF4444;
     --info: #3B82F6;
@@ -45,18 +42,19 @@
     --spacing-xl: 3rem;
 
     /* Border Radius */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
+    --radius-sm: 5px;
+    --radius-md: 5px;
+    --radius-lg: 5px;
     /* Consistent with dashboard */
+    --radius-pill: 50px;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
 
     /* Borders */
-    --border-color: #E5E7EB;
+    --border-color: #005A44;
 }
 
 /* Reset & Base Styles */
@@ -67,11 +65,20 @@
 }
 
 body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Blinker', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Shippori Antique B1', serif;
 }
 
 .installer-app {
@@ -241,9 +248,9 @@ select:focus {
     gap: var(--spacing-xs);
     padding: 0.75rem 1.5rem;
     border: 1px solid transparent;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-pill);
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     text-decoration: none;
@@ -251,7 +258,7 @@ select:focus {
 
 .btn-primary {
     background: var(--primary-color);
-    color: white;
+    color: #00120E;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -260,9 +267,9 @@ select:focus {
 }
 
 .btn-secondary {
-    background: white;
-    border-color: var(--border-color);
-    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
 .btn-secondary:hover:not(:disabled) {
