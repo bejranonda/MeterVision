@@ -480,17 +480,17 @@ select:focus {
 
 .validation-item.pending {
     border-left-color: var(--info);
-    background: #EFF6FF;
+    background: rgba(59, 130, 246, 0.1);
 }
 
 .validation-item.passed {
     border-left-color: var(--success);
-    background: #ECFDF5;
+    background: rgba(189, 255, 120, 0.08);
 }
 
 .validation-item.failed {
     border-left-color: var(--error);
-    background: #FEF2F2;
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .validation-icon {
@@ -690,7 +690,7 @@ select:focus {
 
 .input-highlight {
     border: 2px solid var(--secondary-color) !important;
-    background: #EFF6FF !important;
+    background: rgba(59, 130, 246, 0.1) !important;
 }
 
 .help-text {

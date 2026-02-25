@@ -6,6 +6,126 @@ const state = {
     meters: [],
     logs: [],
     currentMeter: null, // For detail view
+    lang: localStorage.getItem('app_lang') || 'de'
+};
+
+const translations = {
+    en: {
+        'menu.dashboard.title': 'Dashboard',
+        'menu.dashboard.desc': 'Overview & statistics',
+        'menu.organizations.title': 'Organizations',
+        'menu.organizations.desc': 'Manage tenants',
+        'menu.meters.title': 'Meters',
+        'menu.meters.desc': 'View & manage meters',
+        'menu.logs.title': 'Logs',
+        'menu.logs.desc': 'System event history',
+        'menu.settings.title': 'Settings',
+        'menu.settings.desc': 'App configuration',
+        'header.logout': 'Logout',
+        'login.title': 'MeterVision',
+        'login.subtitle': 'Sign In',
+        'login.username': 'Username',
+        'login.password': 'Password',
+        'login.button': 'Login',
+        'dashboard.active_meters': 'Active Meters',
+        'dashboard.organizations': 'Organizations',
+        'dashboard.readings_today': 'Readings Today',
+        'dashboard.alerts': 'Alerts',
+        'dashboard.recent_activity': 'Recent Activity',
+        'dashboard.view_all': 'View All',
+        'dashboard.table.time': 'Time',
+        'dashboard.table.event': 'Event',
+        'dashboard.table.details': 'Details',
+        'dashboard.table.status': 'Status',
+        'dashboard.table.loading': 'Loading activity...',
+        'organizations.title': 'My Organizations',
+        'meters.search': 'Search meters...',
+        'meters.add_meter': 'Add Meter',
+        'meter_detail.back': 'Back to Meters',
+        'meter_detail.history': 'Reading History',
+        'meter_detail.recent': 'Recent Readings',
+        'meter_detail.table.date': 'Date',
+        'meter_detail.table.value': 'Value',
+        'meter_detail.table.image': 'Image',
+        'meter_detail.details': 'Meter Details',
+        'meter_detail.manual_upload': 'Manual Upload',
+        'meter_detail.upload_image': 'Upload Image',
+        'meter_detail.expected_value': 'Expected Value (Optional)',
+        'meter_detail.submit': 'Submit Reading',
+        'meter_detail.danger_zone': 'Danger Zone',
+        'meter_detail.delete_meter': 'Delete Meter',
+        'logs.title': 'System Logs',
+        'logs.refresh': 'Refresh',
+        'settings.title': 'App Settings',
+        'settings.desc': 'Configuration options will appear here.',
+        'modal.create_meter.serial': 'Serial Number',
+        'modal.create_meter.org_id': 'Organization ID (Optional)',
+        'modal.create_meter.org_id_placeholder': 'Leave empty for default',
+        'modal.create_meter.org_id_help': 'Leave empty to use default "Undefined Organization"',
+        'modal.create_meter.type': 'Type',
+        'modal.create_meter.type_placeholder': 'Select or type custom type',
+        'modal.create_meter.unit': 'Unit',
+        'modal.cancel': 'Cancel',
+        'modal.create_meter.submit': 'Create Meter'
+    },
+    de: {
+        'menu.dashboard.title': 'Übersicht',
+        'menu.dashboard.desc': 'Aktuellen Status und Statistiken anzeigen',
+        'menu.organizations.title': 'Kunden / Organisationen',
+        'menu.organizations.desc': 'Mandanten und Kunden verwalten',
+        'menu.meters.title': 'Zählerverwaltung',
+        'menu.meters.desc': 'Zähler und Ablesungen verwalten',
+        'menu.logs.title': 'Systemprotokolle',
+        'menu.logs.desc': 'Verlauf der Systemereignisse ansehen',
+        'menu.settings.title': 'Einstellungen',
+        'menu.settings.desc': 'App-Konfiguration',
+        'header.logout': 'Abmelden',
+        'login.title': 'MeterVision',
+        'login.subtitle': 'Anmelden',
+        'login.username': 'Benutzername*',
+        'login.password': 'Passwort*',
+        'login.button': 'Einloggen',
+        'dashboard.active_meters': 'Aktive Zähler',
+        'dashboard.organizations': 'Organisationen',
+        'dashboard.readings_today': 'Ablesungen Heute',
+        'dashboard.alerts': 'Warnungen',
+        'dashboard.recent_activity': 'Letzte Aktivitäten',
+        'dashboard.view_all': 'Alle ansehen',
+        'dashboard.table.time': 'Zeit',
+        'dashboard.table.event': 'Ereignis',
+        'dashboard.table.details': 'Details',
+        'dashboard.table.status': 'Status',
+        'dashboard.table.loading': 'Aktivitäten werden geladen...',
+        'organizations.title': 'Meine Organisationen',
+        'meters.search': 'Suchen...',
+        'meters.add_meter': 'Zähler hinzufügen',
+        'meter_detail.back': 'Zurück zu Zählern',
+        'meter_detail.history': 'Ablesehistorie',
+        'meter_detail.recent': 'Letzte Ablesungen',
+        'meter_detail.table.date': 'Datum',
+        'meter_detail.table.value': 'Wert',
+        'meter_detail.table.image': 'Bild',
+        'meter_detail.details': 'Zählerdetails',
+        'meter_detail.manual_upload': 'Manueller Upload',
+        'meter_detail.upload_image': 'Bild hochladen',
+        'meter_detail.expected_value': 'Erwarteter Wert (Optional)',
+        'meter_detail.submit': 'Einreichen',
+        'meter_detail.danger_zone': 'Gefahrenbereich',
+        'meter_detail.delete_meter': 'Zähler löschen',
+        'logs.title': 'Systemprotokolle',
+        'logs.refresh': 'Aktualisieren',
+        'settings.title': 'App-Einstellungen',
+        'settings.desc': 'Konfigurationsoptionen werden hier angezeigt.',
+        'modal.create_meter.serial': 'Seriennummer',
+        'modal.create_meter.org_id': 'Organisations-ID (Optional)',
+        'modal.create_meter.org_id_placeholder': 'Leer lassen für Standard',
+        'modal.create_meter.org_id_help': 'Leer lassen, um die "Undefinierte Organisation" zu verwenden',
+        'modal.create_meter.type': 'Typ',
+        'modal.create_meter.type_placeholder': 'Wählen oder tippen Sie einen benutzerdefinierten Typ',
+        'modal.create_meter.unit': 'Einheit',
+        'modal.cancel': 'Abbrechen',
+        'modal.create_meter.submit': 'Zähler erstellen'
+    }
 };
 
 const API_BASE_URL = window.location.origin;
@@ -24,6 +144,35 @@ function navigateTo(view, params = null) {
     // Close sidebar on mobile on navigation
     document.getElementById('sidebar')?.classList.remove('open');
     document.getElementById('sidebar-overlay')?.classList.remove('active');
+    applyTranslations();
+}
+
+function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[state.lang] && translations[state.lang][key]) {
+            el.innerHTML = translations[state.lang][key];
+        }
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[state.lang] && translations[state.lang][key]) {
+            el.setAttribute('placeholder', translations[state.lang][key]);
+        }
+    });
+}
+
+function toggleLanguage() {
+    state.lang = state.lang === 'de' ? 'en' : 'de';
+    localStorage.setItem('app_lang', state.lang);
+
+    // Update button text
+    const langBtnText = document.getElementById('current-lang-text');
+    if (langBtnText) {
+        langBtnText.innerText = state.lang === 'de' ? 'EN' : 'DE'; // Show what it toggles TO
+    }
+
+    applyTranslations();
 }
 
 async function initializeApp() {
@@ -62,11 +211,17 @@ function renderAppLayout() {
                 <div style="font-weight: 600; font-size: 0.9rem;">${state.user.username}</div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary);">Admin</div>
             </div>
-            <div style="width: 32px; height: 32px; background: #E0E7FF; color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+            <div style="width: 32px; height: 32px; background: var(--bg-card); border: 2px solid var(--primary-color); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
                 ${state.user.username[0].toUpperCase()}
             </div>
         `;
     }
+
+    const langBtnText = document.getElementById('current-lang-text');
+    if (langBtnText) {
+        langBtnText.innerText = state.lang === 'de' ? 'EN' : 'DE';
+    }
+    applyTranslations();
 }
 
 function setupNavigation() {
@@ -79,6 +234,7 @@ function setupNavigation() {
     });
 
     document.getElementById('logout-btn')?.addEventListener('click', logout);
+    document.getElementById('lang-toggle-btn')?.addEventListener('click', toggleLanguage);
 }
 
 function setupMobileNav() {
@@ -439,10 +595,12 @@ function renderReadingsChart(readings) {
             datasets: [{
                 label: 'Reading Value',
                 data: values,
-                borderColor: '#10B981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderColor: '#BDFF78',
+                backgroundColor: 'rgba(189, 255, 120, 0.08)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointBackgroundColor: '#BDFF78',
+                pointRadius: 4
             }]
         },
         options: {
@@ -452,8 +610,8 @@ function renderReadingsChart(readings) {
                 legend: { display: false }
             },
             scales: {
-                y: { beginAtZero: false, grid: { color: '#f3f4f6' } },
-                x: { grid: { display: false } }
+                y: { beginAtZero: false, grid: { color: 'rgba(0, 90, 68, 0.4)' }, ticks: { color: '#BDFF78' } },
+                x: { grid: { display: false }, ticks: { color: 'rgba(189,255,120,0.6)' } }
             }
         }
     });
@@ -536,7 +694,7 @@ async function renderLogs(container) {
                                     <td>
                                         <div style="font-weight: 500;">${log.message}</div>
                                         ${log.details && Object.keys(log.details).length > 0 ?
-                        `<pre style="font-size: 0.75rem; margin-top: 0.5rem; background: #f8f9fa; padding: 0.5rem; border-radius: 4px; overflow: auto; max-width: 400px;">${JSON.stringify(log.details, null, 2)}</pre>`
+                        `<pre style="font-size: 0.75rem; margin-top: 0.5rem; background: rgba(0,18,14,0.6); border: 1px solid var(--border-color); color: var(--primary-color); padding: 0.5rem; border-radius: 4px; overflow: auto; max-width: 400px;">${JSON.stringify(log.details, null, 2)}</pre>`
                         : ''}
                                     </td>
                                 </tr>
@@ -570,9 +728,12 @@ function renderSettings(container) {
 function renderLoginView() {
     const appElement = document.getElementById('app');
     const loginTemplate = document.getElementById('login-template');
-    appElement.innerHTML = loginTemplate.innerHTML;
+
+    appElement.innerHTML = '';
+    appElement.appendChild(loginTemplate.content.cloneNode(true));
 
     document.getElementById('login-form').addEventListener('submit', handleLogin);
+    applyTranslations();
 }
 
 async function handleLogin(e) {

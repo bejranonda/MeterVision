@@ -17,6 +17,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Styles -->
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/favicon.png">
 </head>
 
 <body>
@@ -32,19 +34,58 @@
             </div>
             <nav id="main-nav">
                 <ul>
-                    <li><a href="#" data-view="dashboard"><i class="ph-fill ph-squares-four"></i> Dashboard</a></li>
-                    <li><a href="#" data-view="organizations"><i class="ph-fill ph-buildings"></i> Organizations</a>
+                    <li>
+                        <a href="#" data-view="dashboard" title="View current status and statistics">
+                            <i class="ph-fill ph-squares-four"></i>
+                            <span class="nav-text">
+                                <span class="nav-title" data-i18n="menu.dashboard.title">Übersicht</span>
+                                <span class="nav-subtitle" data-i18n="menu.dashboard.desc">Aktuellen Status und
+                                    Statistiken anzeigen</span>
+                            </span>
+                        </a>
                     </li>
-                    <li><a href="#" data-view="meters"><i class="ph-fill ph-gauge"></i> Meters</a></li>
-                    <li><a href="#" data-view="logs"><i class="ph-fill ph-scroll"></i> Logs</a></li>
-                    <li><a href="#" data-view="settings"><i class="ph-fill ph-gear"></i> Settings</a></li>
+                    <li>
+                        <a href="#" data-view="organizations" title="Manage tenants and customers">
+                            <i class="ph-fill ph-buildings"></i>
+                            <span class="nav-text">
+                                <span class="nav-title" data-i18n="menu.organizations.title">Kunden /
+                                    Organisationen</span>
+                                <span class="nav-subtitle" data-i18n="menu.organizations.desc">Mandanten und Kunden
+                                    verwalten</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-view="meters" title="View and manage meters">
+                            <i class="ph-fill ph-gauge"></i>
+                            <span class="nav-text">
+                                <span class="nav-title" data-i18n="menu.meters.title">Zählerverwaltung</span>
+                                <span class="nav-subtitle" data-i18n="menu.meters.desc">Zähler und Ablesungen
+                                    verwalten</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-view="logs" title="System event history">
+                            <i class="ph-fill ph-scroll"></i>
+                            <span class="nav-text">
+                                <span class="nav-title" data-i18n="menu.logs.title">Systemprotokolle</span>
+                                <span class="nav-subtitle" data-i18n="menu.logs.desc">Verlauf der Systemereignisse
+                                    ansehen</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-view="settings" title="App configuration">
+                            <i class="ph-fill ph-gear"></i>
+                            <span class="nav-text">
+                                <span class="nav-title" data-i18n="menu.settings.title">Einstellungen</span>
+                                <span class="nav-subtitle" data-i18n="menu.settings.desc">App-Konfiguration</span>
+                            </span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
-            <div style="padding: 1rem;">
-                <button id="logout-btn" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
-                    <i class="ph-bold ph-sign-out"></i> Logout
-                </button>
-            </div>
         </div>
 
         <main id="main-content">
@@ -56,16 +97,21 @@
                     <button id="mobile-menu-btn" class="mobile-nav-toggle">
                         <i class="ph-bold ph-list"></i>
                     </button>
-                    <h2 id="page-title" style="margin: 0; font-size: 1.25rem;">Dashboard</h2>
+                    <span id="app-header-title">MeterVision</span>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <button class="btn btn-icon btn-secondary">
-                        <i class="ph-bold ph-bell"></i>
-                    </button>
                     <div id="user-info">
                         <!-- User info loaded here -->
                     </div>
+                    <button id="lang-toggle-btn" class="btn btn-secondary"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.875rem;">
+                        <i class="ph-bold ph-translate"></i> <span id="current-lang-text">EN</span>
+                    </button>
+                    <button id="logout-btn" class="btn btn-secondary"
+                        style="padding: 0.4rem 1rem; font-size: 0.875rem;">
+                        <i class="ph-bold ph-sign-out"></i> <span data-i18n="header.logout">Abmelden</span>
+                    </button>
                 </div>
             </header>
 
@@ -92,30 +138,29 @@
             <div style="text-align: center; margin-bottom: 2.5rem;">
                 <img src="/static/logo.svg" alt="Smartrplace logo" class="brand-logo"
                     style="margin: 0 auto 1.5rem auto;">
-                <h2 class="text-muted"
-                    style="font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase; font-size: 0.875rem;">
-                    Enterprise Meter Management</h2>
+                <h1 data-i18n="login.title"
+                    style="font-family: 'Shippori Antique B1', serif; font-size: 2.125rem; font-weight: 700; color: var(--primary-color); margin: 0 0 0.5rem 0;">
+                    MeterVision</h1>
+                <p data-i18n="login.subtitle" style="color: var(--primary-color); font-size: 1.25rem; margin: 0;">
+                    Anmelden</p>
             </div>
 
             <form id="login-form">
                 <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <div style="position: relative;">
-                        <i class="ph-bold ph-user"
-                            style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
-                        <input type="text" id="username" placeholder="Username" style="padding-left: 2.5rem;" required>
-                    </div>
+                    <label class="form-label" data-i18n="login.username"
+                        style="color: var(--primary-color);">Benutzername*</label>
+                    <input type="text" id="username" placeholder="" required
+                        style="border-color: var(--primary-color); padding: 0.875rem; border-radius: var(--radius-sm);">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <div style="position: relative;">
-                        <i class="ph-bold ph-lock"
-                            style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
-                        <input type="password" id="password" placeholder="Password" style="padding-left: 2.5rem;"
-                            required>
-                    </div>
+                    <label class="form-label" data-i18n="login.password"
+                        style="color: var(--primary-color); margin-top: 1.5rem;">Passwort*</label>
+                    <input type="password" id="password" placeholder="" required
+                        style="border-color: var(--primary-color); padding: 0.875rem; border-radius: var(--radius-sm);">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; margin-top: 2rem; padding: 1rem; border-radius: 50px;"
+                    data-i18n="login.button">Einloggen</button>
             </form>
         </div>
     </template>
@@ -126,43 +171,44 @@
             <div class="card stat-card">
                 <div class="stat-icon bg-green-light"><i class="ph-fill ph-gauge"></i></div>
                 <div class="stat-value" id="stat-active-meters">-</div>
-                <div class="stat-label">Active Meters</div>
+                <div class="stat-label" data-i18n="dashboard.active_meters">Aktive Zähler</div>
             </div>
             <div class="card stat-card">
                 <div class="stat-icon bg-blue-light"><i class="ph-fill ph-buildings"></i></div>
                 <div class="stat-value" id="stat-organizations">-</div>
-                <div class="stat-label">Organizations</div>
+                <div class="stat-label" data-i18n="dashboard.organizations">Organisationen</div>
             </div>
             <div class="card stat-card">
                 <div class="stat-icon bg-orange-light"><i class="ph-fill ph-lightning"></i></div>
                 <div class="stat-value" id="stat-readings-today">-</div>
-                <div class="stat-label">Readings Today</div>
+                <div class="stat-label" data-i18n="dashboard.readings_today">Ablesungen Heute</div>
             </div>
             <div class="card stat-card">
                 <div class="stat-icon bg-red-light"><i class="ph-fill ph-warning-circle"></i></div>
                 <div class="stat-value" id="stat-alerts">0</div>
-                <div class="stat-label">Alerts</div>
+                <div class="stat-label" data-i18n="dashboard.alerts">Warnungen</div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Recent Activity</h3>
-                <button class="btn btn-sm btn-secondary">View All</button>
+                <h3 class="card-title" data-i18n="dashboard.recent_activity">Letzte Aktivitäten</h3>
+                <button class="btn btn-sm btn-secondary" data-i18n="dashboard.view_all">Alle ansehen</button>
             </div>
             <div class="table-container">
                 <table id="recent-activity-table">
                     <thead>
                         <tr>
-                            <th>Time</th>
-                            <th>Event</th>
-                            <th>Details</th>
-                            <th>Status</th>
+                            <th data-i18n="dashboard.table.time">Zeit</th>
+                            <th data-i18n="dashboard.table.event">Ereignis</th>
+                            <th data-i18n="dashboard.table.details">Details</th>
+                            <th data-i18n="dashboard.table.status">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="4" class="text-muted" style="text-align: center;">Loading activity...</td>
+                            <td colspan="4" class="text-muted" style="text-align: center;"
+                                data-i18n="dashboard.table.loading">Aktivitäten werden geladen...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -174,7 +220,7 @@
     <template id="organizations-template">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">My Organizations</h3>
+                <h3 class="card-title" data-i18n="organizations.title">Meine Organisationen</h3>
                 <!-- Admin only button could go here -->
             </div>
             <ul id="org-list"></ul>
@@ -185,10 +231,10 @@
     <template id="meters-template">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div style="display: flex; gap: 1rem; flex: 1; max-width: 400px;">
-                <input type="text" placeholder="Search meters..." id="meter-search">
+                <input type="text" placeholder="Suchen..." data-i18n-placeholder="meters.search" id="meter-search">
             </div>
             <button class="btn btn-primary" id="btn-create-meter">
-                <i class="ph-bold ph-plus"></i> Add Meter
+                <i class="ph-bold ph-plus"></i> <span data-i18n="meters.add_meter">Zähler hinzufügen</span>
             </button>
         </div>
 
@@ -201,7 +247,7 @@
     <template id="meter-detail-template">
         <div style="margin-bottom: 1.5rem;">
             <button class="btn btn-secondary" onclick="navigateTo('meters')">
-                <i class="ph-bold ph-arrow-left"></i> Back to Meters
+                <i class="ph-bold ph-arrow-left"></i> <span data-i18n="meter_detail.back">Zurück zu Zählern</span>
             </button>
         </div>
 
@@ -210,10 +256,10 @@
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Reading History</h3>
+                        <h3 class="card-title" data-i18n="meter_detail.history">Ablesehistorie</h3>
                         <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-sm btn-secondary active">7D</button>
-                            <button class="btn btn-sm btn-secondary">30D</button>
+                            <button class="btn btn-sm btn-secondary active">7T</button>
+                            <button class="btn btn-sm btn-secondary">30T</button>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -222,14 +268,15 @@
                 </div>
 
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 1rem;">Recent Readings</h3>
+                    <h3 class="card-title" style="margin-bottom: 1rem;" data-i18n="meter_detail.recent">Letzte
+                        Ablesungen</h3>
                     <div class="table-container">
                         <table id="readings-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Value</th>
-                                    <th>Image</th>
+                                    <th data-i18n="meter_detail.table.date">Datum</th>
+                                    <th data-i18n="meter_detail.table.value">Wert</th>
+                                    <th data-i18n="meter_detail.table.image">Bild</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -241,34 +288,41 @@
             <!-- Right Column: Info & Actions -->
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 1rem;">Meter Details</h3>
+                    <h3 class="card-title" style="margin-bottom: 1rem;" data-i18n="meter_detail.details">Zählerdetails
+                    </h3>
                     <div id="meter-meta-info">
                         <!-- Populated by JS -->
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 1rem;">Manual Upload</h3>
+                    <h3 class="card-title" style="margin-bottom: 1rem;" data-i18n="meter_detail.manual_upload">Manueller
+                        Upload</h3>
                     <form id="upload-reading-form">
                         <div class="form-group">
-                            <label class="form-label">Upload Image</label>
+                            <label class="form-label" data-i18n="meter_detail.upload_image">Bild hochladen</label>
                             <input type="file" id="reading-image" accept="image/*" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Expected Value (Optional)</label>
-                            <input type="number" step="any" id="expected-value" placeholder="e.g. 1234.5">
+                            <label class="form-label" data-i18n="meter_detail.expected_value">Erwarteter Wert
+                                (Optional)</label>
+                            <input type="number" step="any" id="expected-value" placeholder="z.B. 1234.5">
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">
-                            Upload Reading
+                        <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-upload-reading">
+                            <i class="ph-bold ph-upload-simple"></i> <span
+                                data-i18n="meter_detail.submit">Einreichen</span>
                         </button>
                     </form>
                 </div>
 
-                <div class="card" style="border: 1px solid #fee2e2; background-color: #fef2f2;">
-                    <h3 class="card-title" style="margin-bottom: 1rem; color: #dc2626;">Danger Zone</h3>
+                <div class="card"
+                    style="border: 1px solid rgba(239, 68, 68, 0.4); background-color: rgba(239, 68, 68, 0.08);">
+                    <h3 class="card-title" style="margin-bottom: 1rem; color: var(--error);"
+                        data-i18n="meter_detail.danger_zone">Gefahrenbereich</h3>
                     <button id="delete-meter-btn" class="btn"
-                        style="width: 100%; background-color: #dc2626; color: white; border: none;">
-                        <i class="ph-bold ph-trash"></i> Delete Meter
+                        style="width: 100%; background-color: var(--error); color: white; border: none;">
+                        <i class="ph-bold ph-trash"></i> <span data-i18n="meter_detail.delete_meter">Zähler
+                            löschen</span>
                     </button>
                 </div>
             </div>
@@ -279,9 +333,9 @@
     <template id="log-viewer-template">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">System Logs</h3>
+                <h3 class="card-title" data-i18n="logs.title">Systemprotokolle</h3>
                 <button class="btn btn-secondary btn-sm" id="refresh-logs"><i class="ph-bold ph-arrows-clockwise"></i>
-                    Refresh</button>
+                    <span data-i18n="logs.refresh">Aktualisieren</span></button>
             </div>
             <div id="log-entries"></div>
         </div>
@@ -290,8 +344,8 @@
     <!-- Settings Template -->
     <template id="settings-template">
         <div class="card">
-            <h3 class="card-title" style="margin-bottom: 1.5rem;">App Settings</h3>
-            <p class="text-muted">Configuration options will appear here.</p>
+            <h3 class="card-title" style="margin-bottom: 1.5rem;" data-i18n="settings.title">App-Einstellungen</h3>
+            <p class="text-muted" data-i18n="settings.desc">Konfigurationsoptionen werden hier angezeigt.</p>
         </div>
     </template>
 
@@ -299,18 +353,21 @@
     <template id="create-meter-modal-content">
         <form id="create-meter-form">
             <div class="form-group">
-                <label class="form-label">Serial Number</label>
+                <label class="form-label" data-i18n="modal.create_meter.serial">Seriennummer</label>
                 <input type="text" name="serial_number" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Organization ID (Optional)</label>
-                <input type="number" name="organization_id" placeholder="Leave empty for default">
-                <small class="text-muted">Leave empty to use default "Undefined Organization"</small>
+                <label class="form-label" data-i18n="modal.create_meter.org_id">Organisations-ID (Optional)</label>
+                <input type="number" name="organization_id" placeholder="Leer lassen für Standard"
+                    data-i18n-placeholder="modal.create_meter.org_id_placeholder">
+                <small class="text-muted" data-i18n="modal.create_meter.org_id_help">Leer lassen, um die "Undefinierte
+                    Organisation" zu verwenden</small>
             </div>
             <div class="form-group">
-                <label class="form-label">Type</label>
+                <label class="form-label" data-i18n="modal.create_meter.type">Typ</label>
                 <input type="text" name="meter_type" list="meter-types" required
-                    placeholder="Select or type custom type">
+                    placeholder="Wählen oder tippen Sie einen benutzerdefinierten Typ"
+                    data-i18n-placeholder="modal.create_meter.type_placeholder">
                 <datalist id="meter-types">
                     <option value="Electricity">
                     <option value="Gas">
@@ -322,7 +379,7 @@
                 </datalist>
             </div>
             <div class="form-group">
-                <label class="form-label">Unit</label>
+                <label class="form-label" data-i18n="modal.create_meter.unit">Einheit</label>
                 <select name="unit">
                     <option value="kWh">kWh</option>
                     <option value="m3">m³</option>
@@ -330,8 +387,10 @@
                 </select>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Meter</button>
+                <button type="button" class="btn btn-secondary modal-close-btn"
+                    data-i18n="modal.cancel">Abbrechen</button>
+                <button type="submit" class="btn btn-primary" data-i18n="modal.create_meter.submit">Zähler
+                    erstellen</button>
             </div>
         </form>
     </template>
