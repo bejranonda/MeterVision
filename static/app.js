@@ -128,7 +128,7 @@ const translations = {
     }
 };
 
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = window.location.origin + '/meter-vision-api';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (state.token) {

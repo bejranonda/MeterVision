@@ -4,8 +4,8 @@
  */
 
 // API Configuration
-const API_URL = '';  // Same origin
-let authToken = localStorage.getItem('installer_token');
+const API_URL = '/meter-vision-api';  // Point to backend sub-route
+let authToken = localStorage.getItem('access_token');
 let currentUser = null;
 let selectedOrganization = null;
 let currentStep = 1;
@@ -88,7 +88,7 @@ async function handleLogin(e) {
 
         const data = await response.json();
         authToken = data.access_token;
-        localStorage.setItem('installer_token', authToken);
+        localStorage.setItem('access_token', authToken);
 
         // Get user info
         await loadUserInfo();
@@ -113,7 +113,7 @@ async function loadUserInfo() {
 }
 
 function handleLogout() {
-    localStorage.removeItem('installer_token');
+    localStorage.removeItem('access_token');
     authToken = null;
     currentUser = null;
     selectedOrganization = null;
