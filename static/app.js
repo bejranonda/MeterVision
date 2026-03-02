@@ -295,7 +295,7 @@ function closeModal() {
 
 async function renderMainView(params = null) {
     const viewContent = document.getElementById('view-content');
-    const pageTitle = document.getElementById('page-title');
+    const pageTitle = document.getElementById('app-header-title');
 
     // Update active nav
     document.querySelectorAll('#main-nav li').forEach(li => li.classList.remove('active'));
@@ -303,7 +303,9 @@ async function renderMainView(params = null) {
     const activeView = state.currentView === 'meter-detail' ? 'meters' : state.currentView;
     document.querySelector(`#main-nav a[data-view="${activeView}"]`)?.closest('li')?.classList.add('active');
 
-    pageTitle.textContent = state.currentView.charAt(0).toUpperCase() + state.currentView.replace('-', ' ').slice(1);
+    if (pageTitle) {
+        pageTitle.textContent = state.currentView.charAt(0).toUpperCase() + state.currentView.replace('-', ' ').slice(1);
+    }
 
     switch (state.currentView) {
         case 'dashboard':

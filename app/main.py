@@ -36,9 +36,20 @@ import os
 import uuid
 from dotenv import load_dotenv
 
+from fastapi.middleware.cors import CORSMiddleware
+
 load_dotenv(".env.local")
 
 app = FastAPI(title="MeterVision Enterprise API")
+
+# Add CORS Middleware to allow Operade frontend (port 8002) to authenticate
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8002", "http://127.0.0.1:8002"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include routers
 app.include_router(organizations.router)
