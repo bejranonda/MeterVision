@@ -182,7 +182,24 @@ async function initializeApp() {
         await renderMainView();
     } catch (error) {
         console.error('Initialization failed:', error);
-        logout();
+        // Only logout on actual auth failures, not UI rendering bugs
+        if (error?.status === 401 || error?.message?.includes('token')) {
+            logout();
+        } else {
+            // Show error UI instead of silently logging out
+            const appElement = document.getElementById('app');
+            if (appElement) {
+                appElement.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;">
+                        <div class="card" style="max-width:500px;text-align:center;">
+                            <h2 style="color:var(--error,#ef4444);margin-bottom:1rem;">Initialization Error</h2>
+                            <p style="margin-bottom:1rem;">${error.message || 'An unexpected error occurred while loading the application.'}</p>
+                            <button class="btn btn-primary" onclick="location.reload()">Reload</button>
+                            <button class="btn btn-secondary" style="margin-left:0.5rem;" onclick="logout()">Logout</button>
+                        </div>
+                    </div>`;
+            }
+        }
     }
 }
 
