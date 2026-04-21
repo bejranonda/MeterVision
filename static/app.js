@@ -6,7 +6,7 @@ const state = {
     meters: [],
     logs: [],
     currentMeter: null, // For detail view
-    lang: localStorage.getItem('app_lang') || 'de'
+    lang: localStorage.getItem('i18nextLng') || 'de'
 };
 
 const translations = {
@@ -22,7 +22,7 @@ const translations = {
         'menu.settings.title': 'Settings',
         'menu.settings.desc': 'App configuration',
         'header.logout': 'Logout',
-        'login.title': 'MeterVision',
+        'login.title': 'Meter Vision',
         'login.subtitle': 'Sign In',
         'login.username': 'Username',
         'login.password': 'Password',
@@ -58,15 +58,22 @@ const translations = {
         'logs.refresh': 'Refresh',
         'settings.title': 'App Settings',
         'settings.desc': 'Configuration options will appear here.',
-        'modal.create_meter.serial': 'Serial Number',
-        'modal.create_meter.org_id': 'Organization ID (Optional)',
-        'modal.create_meter.org_id_placeholder': 'Leave empty for default',
-        'modal.create_meter.org_id_help': 'Leave empty to use default "Undefined Organization"',
+        'modal.create_meter.serial': 'Serial Number / MAC Address',
+        'modal.create_meter.serial_placeholder': 'e.g. 9C:13:9E:BB:C9:44 or 9C139EBBc944',
+        'modal.create_meter.serial_help': 'MAC addresses are auto-formatted — enter with or without colons/dashes',
+        'modal.create_meter.organization': 'Organization',
+        'modal.create_meter.org_default': 'Default Organization',
+        'modal.create_meter.org_create': '+ Create New Organization',
+        'modal.create_meter.org_name_placeholder': 'New organization name',
         'modal.create_meter.type': 'Type',
         'modal.create_meter.type_placeholder': 'Select or type custom type',
         'modal.create_meter.unit': 'Unit',
+        'modal.create_meter.unit_placeholder': 'Select or type custom unit',
         'modal.cancel': 'Cancel',
-        'modal.create_meter.submit': 'Create Meter'
+        'modal.create_meter.submit': 'Create Meter',
+        'modal.create_meter.success': 'Meter created successfully!',
+        'modal.create_meter.error_duplicate': 'A meter with this serial number already exists.',
+        'modal.create_meter.error': 'Failed to create meter.'
     },
     de: {
         'menu.dashboard.title': 'Übersicht',
@@ -80,7 +87,7 @@ const translations = {
         'menu.settings.title': 'Einstellungen',
         'menu.settings.desc': 'App-Konfiguration',
         'header.logout': 'Abmelden',
-        'login.title': 'MeterVision',
+        'login.title': 'Meter Vision',
         'login.subtitle': 'Anmelden',
         'login.username': 'Benutzername*',
         'login.password': 'Passwort*',
@@ -116,31 +123,76 @@ const translations = {
         'logs.refresh': 'Aktualisieren',
         'settings.title': 'App-Einstellungen',
         'settings.desc': 'Konfigurationsoptionen werden hier angezeigt.',
-        'modal.create_meter.serial': 'Seriennummer',
-        'modal.create_meter.org_id': 'Organisations-ID (Optional)',
-        'modal.create_meter.org_id_placeholder': 'Leer lassen für Standard',
-        'modal.create_meter.org_id_help': 'Leer lassen, um die "Undefinierte Organisation" zu verwenden',
+        'modal.create_meter.serial': 'Seriennummer / MAC-Adresse',
+        'modal.create_meter.serial_placeholder': 'z.B. 9C:13:9E:BB:C9:44 oder 9C139EBBc944',
+        'modal.create_meter.serial_help': 'MAC-Adressen werden automatisch formatiert — mit oder ohne Doppelpunkte/Striche',
+        'modal.create_meter.organization': 'Organisation',
+        'modal.create_meter.org_default': 'Standard-Organisation',
+        'modal.create_meter.org_create': '+ Neue Organisation erstellen',
+        'modal.create_meter.org_name_placeholder': 'Neuer Organisationsname',
         'modal.create_meter.type': 'Typ',
         'modal.create_meter.type_placeholder': 'Wählen oder tippen Sie einen benutzerdefinierten Typ',
         'modal.create_meter.unit': 'Einheit',
+        'modal.create_meter.unit_placeholder': 'Wählen oder tippen Sie eine benutzerdefinierte Einheit',
         'modal.cancel': 'Abbrechen',
-        'modal.create_meter.submit': 'Zähler erstellen'
+        'modal.create_meter.submit': 'Zähler erstellen',
+        'modal.create_meter.success': 'Zähler erfolgreich erstellt!',
+        'modal.create_meter.error_duplicate': 'Ein Zähler mit dieser Seriennummer existiert bereits.',
+        'modal.create_meter.error': 'Fehler beim Erstellen des Zählers.'
     }
 };
 
-const API_BASE_URL = window.location.origin + '/meter-vision-api';
+const API_BASE_URL = window.location.origin + "/meter-vision-api";
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (state.token) {
+    if (state.token && isTokenValid(state.token)) {
         initializeApp();
     } else {
+        if (state.token) {
+            console.warn('Token expired or invalid, redirecting to login');
+            localStorage.removeItem('access_token');
+            state.token = null;
+        }
         renderLoginView();
     }
 });
 
+function isTokenValid(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return false;
+        let base64Url = parts[1];
+        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        const payload = JSON.parse(atob(base64));
+        const now = Math.floor(Date.now() / 1000);
+        return payload.exp > now;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function logToBackend(level, message, details = {}) {
+    try {
+        await fetch(window.location.origin + '/api/logs/frontend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                level,
+                message,
+                details: { ...details, app: 'meter-vision', url: window.location.href }
+            }),
+        });
+    } catch (e) { console.error('Failed to log to backend:', e); }
+}
+
 function navigateTo(view, params = null) {
     state.currentView = view;
     renderMainView(params);
+    // Log view transition
+    logToBackend('INFO', `View Navigation: ${view}`, { type: 'interaction', view, params });
     // Close sidebar on mobile on navigation
     document.getElementById('sidebar')?.classList.remove('open');
     document.getElementById('sidebar-overlay')?.classList.remove('active');
@@ -216,6 +268,13 @@ function renderAppLayout() {
     appElement.innerHTML = '';
     appElement.appendChild(appLayoutTemplate.content.cloneNode(true));
 
+    // Render version badge
+    const versionBadge = document.getElementById('version-badge');
+    if (versionBadge) {
+        const badgeClone = versionBadge.content.cloneNode(true);
+        document.body.appendChild(badgeClone);
+    }
+
     // Event Listeners
     setupNavigation();
     setupMobileNav();
@@ -236,7 +295,7 @@ function renderAppLayout() {
 
     const langBtnText = document.getElementById('current-lang-text');
     if (langBtnText) {
-        langBtnText.innerText = state.lang === 'de' ? 'EN' : 'DE';
+        langBtnText.innerText = state.lang.toUpperCase();
     }
     applyTranslations();
 }
@@ -395,11 +454,12 @@ async function renderDashboard(container) {
                 } else {
                     activityTable.innerHTML = recentActivity.map(r => `
                         <tr>
-                            <td>${new Date(r.timestamp).toLocaleString()}</td>
+                            <td>${new Date(r.timestamp + (r.timestamp.endsWith('Z') ? '' : 'Z')).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</td>
                             <td>Meter Reading</td>
                             <td>${r.serial}: <strong>${r.value}</strong></td>
                             <td><span class="badge badge-success">Verified</span></td>
                         </tr>
+
                     `).join('');
                 }
             }
@@ -583,13 +643,17 @@ function renderReadingsTable(readings) {
     tbody.innerHTML = readings.slice(0, 10).map(r => {
         // Handle both full paths (/home/ogema/...) and relative paths (/uploads/...)
         let imagePath = r.raw_image_path;
-        if (imagePath.startsWith('/home/ogema/MeterReading/')) {
-            imagePath = imagePath.replace('/home/ogema/MeterReading', '');
+        if (imagePath.startsWith('/home/ogema/MeterManagement/MeterPortal/backend/')) {
+            imagePath = imagePath.replace('/home/ogema/MeterManagement/MeterPortal/backend', API_BASE_URL);
+        } else if (imagePath.startsWith('/uploads/')) {
+            imagePath = API_BASE_URL + imagePath;
+        } else if (!imagePath.startsWith('http')) {
+            imagePath = API_BASE_URL + '/' + imagePath;
         }
 
         return `
             <tr>
-                <td>${new Date(r.timestamp).toLocaleDateString()} ${new Date(r.timestamp).toLocaleTimeString()}</td>
+                <td>${new Date(r.timestamp + (r.timestamp.endsWith('Z') ? '' : 'Z')).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</td>
                 <td style="font-weight: 600;">${r.value}</td>
                 <td><a href="${imagePath}" target="_blank" class="text-info">View</a></td>
             </tr>
@@ -640,14 +704,99 @@ function openCreateMeterModal() {
     const template = document.getElementById('create-meter-modal-content');
     const formNode = template.content.cloneNode(true);
 
-    // Attach event listener before appending
-    const form = formNode.querySelector('form');
+    // ── Populate Organization Dropdown ────────────────────
+    const orgSelect = formNode.querySelector('#meter-org-select');
+    const orgCreateHint = formNode.querySelector('#org-create-hint');
+    const newOrgInput = formNode.querySelector('#new-org-name');
+
+    // Fetch organizations from API
+    (async () => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/organizations/my-organizations`);
+            if (res.ok) {
+                const orgs = await res.json();
+                state.organizations = orgs;
+                // Populate select with org names
+                orgSelect.innerHTML = `<option value="">${state.lang === 'de' ? 'Standard-Organisation' : 'Default Organization'}</option>`;
+                orgs.forEach(org => {
+                    const opt = document.createElement('option');
+                    opt.value = org.id;
+                    opt.textContent = org.name;
+                    orgSelect.appendChild(opt);
+                });
+                // Add "Create new" option
+                const createOpt = document.createElement('option');
+                createOpt.value = '__create_new__';
+                createOpt.textContent = state.lang === 'de' ? '+ Neue Organisation erstellen' : '+ Create New Organization';
+                orgSelect.appendChild(createOpt);
+            }
+        } catch (e) {
+            console.warn('Failed to load organizations', e);
+        }
+    })();
+
+    // Show/hide new org name input
+    orgSelect.addEventListener('change', () => {
+        if (orgCreateHint) {
+            orgCreateHint.style.display = orgSelect.value === '__create_new__' ? 'block' : 'none';
+        }
+    });
+
+    // ── MAC Address Auto-Format ────────────────────────────
+    const serialInput = formNode.querySelector('#meter-serial-input');
+    serialInput.addEventListener('blur', () => {
+        const raw = serialInput.value.trim();
+        if (!raw) return;
+        // Auto-format MAC addresses (12 hex chars)
+        const cleaned = raw.replace(/[:\-.]/g, '').replace(/\s/g, '');
+        if (cleaned.length === 12 && /^[0-9A-Fa-f]{12}$/.test(cleaned)) {
+            const formatted = cleaned.match(/.{2}/g).join(':').toUpperCase();
+            serialInput.value = formatted;
+        }
+    });
+
+    // ── Form Submission ────────────────────────────────────
+    const form = formNode.querySelector('#create-meter-form');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
+        const payload = {};
 
-        const payload = Object.fromEntries(formData.entries());
-        // For simple form -> JSON
+        payload.serial_number = formData.get('serial_number');
+        payload.meter_type = formData.get('meter_type');
+        payload.unit = formData.get('unit');
+
+        // Handle organization selection
+        const orgVal = formData.get('organization_id');
+        if (orgVal === '__create_new__') {
+            // Create organization first
+            const newOrgName = formData.get('new_org_name') || newOrgInput?.value;
+            if (!newOrgName || !newOrgName.trim()) {
+                alert(state.lang === 'de' ? 'Bitte geben Sie einen Organisationsnamen ein.' : 'Please enter an organization name.');
+                return;
+            }
+            try {
+                const createRes = await fetchWithAuth(`${API_BASE_URL}/api/organizations/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newOrgName.trim() })
+                });
+                if (createRes.ok) {
+                    const newOrg = await createRes.json();
+                    payload.organization_id = newOrg.id;
+                } else {
+                    alert(state.lang === 'de' ? 'Fehler beim Erstellen der Organisation.' : 'Error creating organization.');
+                    return;
+                }
+            } catch (err) {
+                console.error('Org creation error:', err);
+                alert('Error creating organization');
+                return;
+            }
+        } else if (orgVal) {
+            payload.organization_id = parseInt(orgVal);
+        }
+
         try {
             const res = await fetchWithAuth(`${API_BASE_URL}/meters/`, {
                 method: 'POST',
@@ -656,17 +805,21 @@ function openCreateMeterModal() {
             });
             if (res.ok) {
                 closeModal();
-                if (state.currentView === 'meters') renderMeters(document.getElementById('view-content')); // refresh
+                if (state.currentView === 'meters') renderMeters(document.getElementById('view-content'));
+            } else if (res.status === 409) {
+                alert(state.lang === 'de' ? 'Ein Zähler mit dieser Seriennummer existiert bereits.' : 'A meter with this serial number already exists.');
             } else {
-                alert("Failed to create meter");
+                const errData = await res.json().catch(() => ({}));
+                alert((state.lang === 'de' ? 'Fehler beim Erstellen des Zählers: ' : 'Failed to create meter: ') + (errData.detail || ''));
             }
         } catch (err) {
             console.error(err);
-            alert("Error creating meter");
+            alert('Error creating meter');
         }
     });
 
-    openModal('Create New Meter', formNode);
+    const title = state.lang === 'de' ? 'Neuen Zähler erstellen' : 'Create New Meter';
+    openModal(title, formNode);
 }
 
 // ... (renderOrganizations, renderLogs, renderSettings - simplified for brevity but following pattern)
@@ -694,8 +847,11 @@ async function renderLogs(container) {
                 }
 
                 // Sort logs by date descending (to be safe, though API usually does it)
-                logs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
+                logs.sort((a, b) => {
+                    const dateA = new Date(a.created_at + (a.created_at.endsWith('Z') ? '' : 'Z'));
+                    const dateB = new Date(b.created_at + (b.created_at.endsWith('Z') ? '' : 'Z'));
+                    return dateB - dateA;
+                });
                 logContainer.innerHTML = `
                     <table class="table">
                         <thead>
@@ -708,9 +864,10 @@ async function renderLogs(container) {
                         <tbody>
                             ${logs.map(log => `
                                 <tr>
-                                    <td class="text-muted" style="white-space: nowrap;">${new Date(log.created_at).toLocaleString()}</td>
+                                    <td class="text-muted" style="white-space: nowrap;">${new Date(log.created_at + (log.created_at.endsWith('Z') ? '' : 'Z')).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</td>
                                     <td><span class="status-badge status-${log.level.toLowerCase()}">${log.level}</span></td>
                                     <td>
+
                                         <div style="font-weight: 500;">${log.message}</div>
                                         ${log.details && Object.keys(log.details).length > 0 ?
                         `<pre style="font-size: 0.75rem; margin-top: 0.5rem; background: rgba(0,18,14,0.6); border: 1px solid var(--border-color); color: var(--primary-color); padding: 0.5rem; border-radius: 4px; overflow: auto; max-width: 400px;">${JSON.stringify(log.details, null, 2)}</pre>`
