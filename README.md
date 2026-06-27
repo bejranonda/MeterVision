@@ -25,6 +25,11 @@ The Enterprise Edition features a completely redesigned user interface:
 For a deep dive into how MeterVision works, see our detailed guides:
 - [**Core Concepts**](./docs/CONCEPTS.md) - Vision, Multi-tenancy, and AI Ensemble explanation.
 - [**Technical Architecture**](./docs/ARCHITECTURE.md) - Backend structure, DB schema, and AI voting logic.
+- [**Approach & Method**](./docs/APPROACH.md) - Design reasoning and how the codebase is maintained.
+- [**Development Guidelines**](./docs/GUIDELINES.md) - Setup, conventions, and the security checklist.
+- [**Knowledge Base**](./docs/KNOWLEDGE_BASE.md) - Gotchas and hard-won context (read before changing deps/auth/OCR).
+- [**Known Issues**](./docs/KNOWN_ISSUES.md) - Honest status: what's real, what's simulated, what's a gap.
+- [**Changelog**](./CHANGELOG.md) - Notable changes.
 
 ---
 
@@ -110,19 +115,29 @@ docker-compose logs -f mqtt
 
 ## ⚡ Quick Start
 
-### 1. Initial Setup
+### 1. Configure environment
+```bash
+cp .env.example .env.local
+# Generate a signing secret and paste it into SECRET_KEY in .env.local:
+python -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+> **Production note:** `SECRET_KEY` **must** be set. If it is left blank the app
+> generates a random key at startup, which invalidates all tokens on restart and
+> does not work across multiple workers.
+
+### 2. Initial Setup
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
-### 2. Deploy the Service
+### 3. Deploy the Service
 ```bash
 chmod +x deploy.sh
 ./deploy.sh
 ```
 
-### 3. Verification
+### 4. Verification
 ```bash
 python verify_setup.py         # Verify DB schema and OCR pipeline
 python verify_installation.py  # Simulate end-to-end installation workflow

@@ -8,13 +8,31 @@ from sqlmodel import Session, select
 from .database import get_session
 from .models import User
 import os
+import secrets
+import warnings
 from dotenv import load_dotenv
 
 # Load config
 load_dotenv(".env.local")
 
 # Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "fallback_insecure_key")
+#
+# SECRET_KEY signs every JWT. If it is missing we MUST NOT fall back to a
+# shared, publicly-known constant (that would let anyone forge admin tokens).
+# Instead we generate a strong random key at process start. The trade-off is
+# that all issued tokens are invalidated on restart, which is an acceptable,
+# safe default for development. Production deployments MUST set SECRET_KEY in
+# the environment so tokens survive restarts and multiple workers agree.
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    SECRET_KEY = secrets.token_urlsafe(64)
+    warnings.warn(
+        "SECRET_KEY is not set. A random key was generated for this process; "
+        "all JWTs will be invalidated on restart and will not work across "
+        "multiple workers. Set SECRET_KEY in your environment for production.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 

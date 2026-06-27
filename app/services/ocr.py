@@ -241,47 +241,34 @@ class SmartMeterReader(MeterReader):
             except:
                 pass
 
-        # Voting / Consensus Logic
-        
-        # 0. Collect all positive results from AI models
-        ai_results = [v for v in [val_gemma_27b, val_gemma_12b, val_qwen] if v > 0]
-        
-        # If all agree (highly unlikely)
+        # Voting / Consensus Logic (in priority order)
 
-            
-        # If any 2 AI models agree
-        if val_gemma_27b > 0 and (val_gemma_27b == val_gemma_12b):
+        # 1. Two AI models agree
+        if val_gemma_27b > 0 and val_gemma_27b == val_gemma_12b:
             return val_gemma_27b
-        if val_gemma_12b > 0 and (val_gemma_12b == val_qwen):
+        if val_gemma_12b > 0 and val_gemma_12b == val_qwen:
             return val_gemma_12b
 
-        # 1. If Gemma 27B agrees with a local OCR
+        # 2. Gemma 27B agrees with a local OCR engine
         if val_gemma_27b > 0 and (val_gemma_27b == val_easy or val_gemma_27b == val_tess):
             return val_gemma_27b
 
-
-
-        # 3. If local OCRs agree
+        # 3. Local OCR engines agree with each other
         if val_easy == val_tess and val_easy > 0:
             return val_easy
-        
-        # 4. If no consensus, trust the "smartest" model that returned a value. 
-        # Prioritize Gemma 3 27B.
-        if val_gemma_27b > 0:
-            return val_gemma_27b
-        if val_gemma_12b > 0:
-            return val_gemma_12b
-        if val_qwen > 0:
-            return val_qwen
 
+        # 4. No consensus: trust the strongest model that returned a value,
+        #    preferring Gemma 3 27B, then 12B, then Qwen.
+        for candidate in (val_gemma_27b, val_gemma_12b, val_qwen):
+            if candidate > 0:
+                return candidate
 
-        # 5. Fallback to local models
+        # 5. Fallback to local engines
         if val_easy > 0:
             return val_easy
-        elif val_tess > 0:
+        if val_tess > 0:
             return val_tess
-        else:
-            return 0.0
+        return 0.0
 
     def discover_meter(self, image_path: str) -> dict:
         """
@@ -322,11 +309,11 @@ class SmartMeterReader(MeterReader):
             print(f"Discovery error: {e}")
             return {"meter_type": "Electricity", "serial_number": "UNKNOWN", "reading": 0.0}
 
-class BasicMeterReader(MeterReader):
-    def read_meter(self, image_path: str, expected_value: Optional[str] = None) -> float:
-        return 0.0
-
 def save_upload_file(upload_file, destination: str):
+    # Ensure the target directory exists so uploads don't fail on a fresh host.
+    parent = os.path.dirname(destination)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     try:
         with open(destination, "wb") as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
