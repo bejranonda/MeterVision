@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, status, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -40,12 +41,33 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv(".env.local")
 
-app = FastAPI(title="MeterVision Enterprise API")
+# Directory where uploaded meter images are stored. Configurable so the app is
+# not tied to one developer's machine. Defaults to a relative "uploads" dir.
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Add CORS Middleware to allow Operade frontend (port 8002) to authenticate
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup: create tables, seed the Super Admin and default organization."""
+    create_db_and_tables()
+
+    # Create default Super Admin user
+    with next(get_session()) as session:
+        _seed_admin_and_org(session)
+    yield
+
+
+app = FastAPI(title="MeterVision Enterprise API", lifespan=lifespan)
+
+# Add CORS Middleware. Allowed origins are configurable via CORS_ALLOW_ORIGINS
+# (comma-separated); defaults cover the local companion frontend on port 8002.
+_cors_origins = os.getenv(
+    "CORS_ALLOW_ORIGINS", "http://localhost:8002,http://127.0.0.1:8002"
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8002", "http://127.0.0.1:8002"],
+    allow_origins=[o.strip() for o in _cors_origins.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,72 +78,60 @@ app.include_router(organizations.router)
 app.include_router(installation.router)
 app.include_router(logs.router)
 
-# Create uploads directory if not exists
-os.makedirs("uploads", exist_ok=True)
-
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
-    
-    # Create default Super Admin user
-    with next(get_session()) as session:
-        admin_username = os.getenv("ADMIN_USERNAME", "admin")
-        admin_password = os.getenv("ADMIN_PASSWORD", "securepassword123")
-        admin_email = os.getenv("ADMIN_EMAIL", "admin@metervision.local")
-        hashed_pwd = get_password_hash(admin_password)
-        
-        user = session.exec(select(User).where(User.username == admin_username)).first()
-        if not user:
-            from .models import UserRoleEnum
-            user = User(
-                username=admin_username,
-                email=admin_email,
-                full_name="System Administrator",
-                hashed_password=hashed_pwd,
-                platform_role=UserRoleEnum.SUPER_ADMIN.value,
-                is_active=True
-            )
-            session.add(user)
-            session.commit()
-            print(f"✅ Created Super Admin user: {admin_username}")
-        else:
-            # Update existing user
-            user.hashed_password = hashed_pwd
-            user.email = admin_email
-            if not user.platform_role:
-                from .models import UserRoleEnum
-                user.platform_role = UserRoleEnum.SUPER_ADMIN.value
-            session.add(user)
-            session.commit()
-            print(f"✅ Updated Super Admin user: {admin_username}")
-        
-        # Ensure default organization exists
-        from .models import Organization
-        default_org = session.exec(
-            select(Organization).where(Organization.subdomain == "undefined")
-        ).first()
-        
-        if not default_org:
-            default_org = Organization(
-                name="Undefined Organization",
-                subdomain="undefined",
-                is_active=True,
-                billing_status="active"
-            )
-            session.add(default_org)
-            session.commit()
-            session.refresh(default_org)
-            print(f"✅ Created default organization: Undefined Organization (ID: {default_org.id})")
-        else:
-            print(f"✅ Default organization exists: {default_org.name} (ID: {default_org.id})")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
-# Dependency
-def get_db():
-    from .database import get_session
-    return next(get_session())
+def _seed_admin_and_org(session: Session):
+    """Idempotently ensure the Super Admin user and default organization exist."""
+    from .models import UserRoleEnum, Organization
+
+    admin_username = os.getenv("ADMIN_USERNAME", "admin")
+    admin_password = os.getenv("ADMIN_PASSWORD", "securepassword123")
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@metervision.local")
+    hashed_pwd = get_password_hash(admin_password)
+
+    user = session.exec(select(User).where(User.username == admin_username)).first()
+    if not user:
+        user = User(
+            username=admin_username,
+            email=admin_email,
+            full_name="System Administrator",
+            hashed_password=hashed_pwd,
+            platform_role=UserRoleEnum.SUPER_ADMIN.value,
+            is_active=True
+        )
+        session.add(user)
+        session.commit()
+        print(f"✅ Created Super Admin user: {admin_username}")
+    else:
+        # Update existing user
+        user.hashed_password = hashed_pwd
+        user.email = admin_email
+        if not user.platform_role:
+            user.platform_role = UserRoleEnum.SUPER_ADMIN.value
+        session.add(user)
+        session.commit()
+        print(f"✅ Updated Super Admin user: {admin_username}")
+
+    # Ensure default organization exists
+    default_org = session.exec(
+        select(Organization).where(Organization.subdomain == "undefined")
+    ).first()
+
+    if not default_org:
+        default_org = Organization(
+            name="Undefined Organization",
+            subdomain="undefined",
+            is_active=True,
+            billing_status="active"
+        )
+        session.add(default_org)
+        session.commit()
+        session.refresh(default_org)
+        print(f"✅ Created default organization: Undefined Organization (ID: {default_org.id})")
+    else:
+        print(f"✅ Default organization exists: {default_org.name} (ID: {default_org.id})")
+
 
 # Mount Static Files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -193,10 +203,36 @@ def read_projects(session: Session = Depends(get_session), current_user: User = 
     projects = session.exec(select(Project).where(Project.organization_id.in_(org_ids))).all()
     return list(projects)
 
+# --- Org-scoping helpers ---
+def _user_org_ids(current_user: User, session: Session) -> Optional[List[int]]:
+    """Return the org IDs a user may access, or None for unrestricted (Super Admin)."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+
+    if current_user.platform_role == UserRoleEnum.SUPER_ADMIN.value:
+        return None
+    return [org.id for org in RBACService.get_user_organizations(current_user, session)]
+
+
+def _assert_org_access(current_user: User, organization_id: int, session: Session):
+    """Raise 403 unless the user may write to the given organization."""
+    from .services.rbac_service import RBACService
+    from .models import UserRoleEnum
+
+    if current_user.platform_role in [UserRoleEnum.SUPER_ADMIN.value, UserRoleEnum.PLATFORM_MANAGER.value]:
+        return
+    if not RBACService.get_user_role_in_org(current_user.id, organization_id, session):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this organization"
+        )
+
+
 # --- Customers ---
 @app.post("/customers/", response_model=Customer)
 def create_customer(customer: CustomerBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    db_customer = Customer.from_orm(customer)
+    _assert_org_access(current_user, customer.organization_id, session)
+    db_customer = Customer.model_validate(customer)
     session.add(db_customer)
     session.commit()
     session.refresh(db_customer)
@@ -204,12 +240,18 @@ def create_customer(customer: CustomerBase, session: Session = Depends(get_sessi
 
 @app.get("/customers/", response_model=List[Customer])
 def read_customers(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return session.exec(select(Customer)).all()
+    org_ids = _user_org_ids(current_user, session)
+    if org_ids is None:
+        return list(session.exec(select(Customer)).all())
+    if not org_ids:
+        return []
+    return list(session.exec(select(Customer).where(Customer.organization_id.in_(org_ids))).all())
 
 # --- Buildings ---
 @app.post("/buildings/", response_model=Building)
 def create_building(building: BuildingBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    db_building = Building.from_orm(building)
+    _assert_org_access(current_user, building.organization_id, session)
+    db_building = Building.model_validate(building)
     session.add(db_building)
     session.commit()
     session.refresh(db_building)
@@ -217,12 +259,18 @@ def create_building(building: BuildingBase, session: Session = Depends(get_sessi
 
 @app.get("/buildings/", response_model=List[Building])
 def read_buildings(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return session.exec(select(Building)).all()
+    org_ids = _user_org_ids(current_user, session)
+    if org_ids is None:
+        return list(session.exec(select(Building)).all())
+    if not org_ids:
+        return []
+    return list(session.exec(select(Building).where(Building.organization_id.in_(org_ids))).all())
 
 # --- Places ---
 @app.post("/places/", response_model=Place)
 def create_place(place: PlaceBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    db_place = Place.from_orm(place)
+    _assert_org_access(current_user, place.organization_id, session)
+    db_place = Place.model_validate(place)
     session.add(db_place)
     session.commit()
     session.refresh(db_place)
@@ -230,38 +278,32 @@ def create_place(place: PlaceBase, session: Session = Depends(get_session), curr
 
 @app.get("/places/", response_model=List[Place])
 def read_places(session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return session.exec(select(Place)).all()
+    org_ids = _user_org_ids(current_user, session)
+    if org_ids is None:
+        return list(session.exec(select(Place)).all())
+    if not org_ids:
+        return []
+    return list(session.exec(select(Place).where(Place.organization_id.in_(org_ids))).all())
 
 # --- Meters ---
 @app.post("/meters/", response_model=Meter)
 def create_meter(meter: MeterBase, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Create a new meter within an organization."""
-    from .services.rbac_service import RBACService
-    from .models import UserRoleEnum, Organization
-    
+    from .models import Organization
+
     # Use default organization if none specified
     org_id = meter.organization_id
     if not org_id:
         default_org = session.exec(
             select(Organization).where(Organization.subdomain == "undefined")
         ).first()
-        if default_org:
-            org_id = default_org.id
-        else:
-            # Fallback to ID 1 if undefined org doesn't exist
-            org_id = 1
-    
+        org_id = default_org.id if default_org else 1
+
     # Verify user has access to the organization
-    user_role = RBACService.get_user_role_in_org(current_user.id, org_id, session)
-    
-    if not user_role and current_user.platform_role not in [UserRoleEnum.SUPER_ADMIN.value, UserRoleEnum.PLATFORM_MANAGER.value]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this organization"
-        )
-    
+    _assert_org_access(current_user, org_id, session)
+
     # Create meter with resolved organization_id
-    meter_dict = meter.dict()
+    meter_dict = meter.model_dump()
     meter_dict['organization_id'] = org_id
     db_meter = Meter(**meter_dict)
     session.add(db_meter)
@@ -369,24 +411,33 @@ async def upload_reading(
             )
     
     # 2. Save Image
-    file_ext = file.filename.split(".")[-1]
+    file_ext = (file.filename or "").rsplit(".", 1)[-1] or "jpg"
     filename = f"{uuid.uuid4()}.{file_ext}"
-    upload_dir = "/home/ogema/MeterReading/uploads"
-    file_path = os.path.join(upload_dir, filename)
+    file_path = os.path.join(UPLOAD_DIR, filename)
     save_upload_file(file, file_path)
-    
+
     # 3. Process Image
     reader = SmartMeterReader()
     reading_value = reader.read_meter(file_path, expected_value, meter.custom_prompt)
-    
+
     # 4. Save Reading (with organization_id)
+    # The ensemble returns 0.0 when every engine failed to read a value; reflect
+    # that honestly instead of marking every reading "Verified" with full
+    # confidence. If the expected value was provided and matched, we trust it.
+    matched_expected = False
+    if expected_value:
+        try:
+            matched_expected = reading_value == float(str(expected_value).replace(",", "."))
+        except (TypeError, ValueError):
+            matched_expected = False
+    verified = bool(reading_value and reading_value > 0)
     reading = Reading(
         value=reading_value,
         raw_image_path=file_path,
         meter_id=meter.id,
         organization_id=meter.organization_id,  # Set from meter's organization
-        status="Verified",
-        ocr_confidence=1.0
+        status="Verified" if verified else "Failed",
+        ocr_confidence=1.0 if matched_expected else (0.7 if verified else 0.0)
     )
     session.add(reading)
     session.commit()

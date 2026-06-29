@@ -135,10 +135,11 @@ async def analyze_installation_image(
     import os
     import uuid
     from ..services.ocr import SmartMeterReader, save_upload_file
-    
-    # Save temporary file
-    file_ext = file.filename.split(".")[-1]
-    temp_path = f"uploads/temp_{uuid.uuid4()}.{file_ext}"
+
+    # Save temporary file under the configured upload directory.
+    upload_dir = os.getenv("UPLOAD_DIR", "uploads")
+    file_ext = (file.filename or "").rsplit(".", 1)[-1] or "jpg"
+    temp_path = os.path.join(upload_dir, f"temp_{uuid.uuid4()}.{file_ext}")
     save_upload_file(file, temp_path)
     
     try:

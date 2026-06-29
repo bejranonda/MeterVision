@@ -36,6 +36,13 @@ MeterVision defines 5 hierarchical roles:
 
 ## 4. Reading Verification Rules
 
-- **Automatic Verification**: OCR readings with confidence > 95% are automatically marked as `Verified`.
-- **Manual Review**: Readings with lower confidence are marked as `Pending` for manual review by an `Org Manager` or `Org Viewer`.
-- **Ensemble Voting**: The system uses a weighted voting mechanism (Gemini 2.0 Flash > Gemini 1.5 Flash > EasyOCR > Tesseract) to determine the most likely reading.
+- **Ensemble Voting**: The system uses a weighted voting mechanism over
+  **Gemma 3 27B (Google) > Gemma 3 12B (OpenRouter) > Qwen 2.5 VL (OpenRouter)**,
+  corroborated by **EasyOCR** and **Tesseract**, to determine the most likely
+  reading. See `docs/KNOWLEDGE_BASE.md` for the exact priority order.
+- **Verification status**: A reading is stored as `Verified` when the ensemble
+  produced a value and `Failed` when every engine returned no reading (`0.0`).
+- **Target rule (not yet implemented):** Confidence-threshold auto-verification
+  (e.g. auto-verify above 95%, queue lower-confidence readings as `Pending` for
+  manual review) requires a real confidence score from the ensemble, which is a
+  known TODO — see `docs/KNOWN_ISSUES.md`.

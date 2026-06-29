@@ -1,18 +1,29 @@
-fastapi
-uvicorn
-sqlmodel
-python-multipart
-requests
+# Web framework (Pydantic v2 era)
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.27
+sqlmodel>=0.0.14
+python-multipart>=0.0.9
+httpx>=0.26
+
+# Auth
+# NOTE: passlib 1.7.4 is incompatible with bcrypt >= 4.x. This exact pair is
+# intentional — do not bump bcrypt without also upgrading passlib.
 passlib==1.7.4
 bcrypt==3.2.2
-python-jose[cryptography]
-python-dotenv
-pytesseract
-Pillow
-easyocr
-opencv-python-headless
-google-generativeai
-pytest
-pytest-asyncio
-httpx
-paho-mqtt
+python-jose[cryptography]>=3.3
+python-dotenv>=1.0
+
+# OCR / AI
+requests>=2.31
+pytesseract>=0.3.10
+Pillow>=10.0
+easyocr>=1.7
+opencv-python-headless>=4.8
+google-generativeai>=0.5
+
+# Messaging
+paho-mqtt>=2.0
+
+# Testing
+pytest>=8.0
+pytest-asyncio>=0.23

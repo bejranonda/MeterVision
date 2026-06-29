@@ -1,11 +1,15 @@
 import paho.mqtt.client as mqtt
 import json
 import os
+import sys
 import subprocess
 from dotenv import load_dotenv
 
 # Load configuration
 load_dotenv(".env.local")
+
+# Resolve the decoder script relative to this file so it works on any host.
+DECODE_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "decode_image.py")
 
 MQTT_BROKER = os.getenv("MQTT_BROKER_HOST", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_BROKER_PORT", 1883))
@@ -28,9 +32,10 @@ def on_message(client, userdata, msg):
         payload_str = msg.payload.decode()
         print(f"📩 Received message on {msg.topic}", flush=True)
         
-        # Call the existing decoding script
+        # Call the decoding script using the same interpreter running this
+        # listener, so it picks up the active virtualenv automatically.
         result = subprocess.run(
-            ["/home/ogema/MeterReading/venv/bin/python3", "decode_image.py", payload_str],
+            [sys.executable, DECODE_SCRIPT, payload_str],
             capture_output=True,
             text=True
         )

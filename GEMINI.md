@@ -282,7 +282,7 @@ GET    /api/logs/                            # Retrieve logs
 ### Breaking Changes from v0.1
 - `User` model enhanced with `email`, `platform_role`, `full_name`
 - All asset entities now require `organization_id`
-- Models reorganized into `app/models/` package (old `models.py` backed up as `models_old.py`)
+- Models reorganized into `app/models/` package (the old flat `models.py` was removed; see git history if you need the original)
 - New dependency: Organization context required for most routes
 
 ### Migration Path for Existing Data

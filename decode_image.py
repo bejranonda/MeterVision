@@ -8,8 +8,13 @@ from datetime import datetime
 import time
 from dotenv import load_dotenv
 
-# Load environment variables explicitly to ensure admin creds are available
-load_dotenv("/home/ogema/MeterReading/.env.local")
+# Load environment variables (admin creds, API URL) from .env.local next to
+# this script, regardless of the current working directory.
+_ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env.local")
+load_dotenv(_ENV_PATH)
+
+# Base URL of the MeterVision API. 127.0.0.1 avoids IPv6/IPv4 resolution issues.
+API_URL = os.getenv("METERVISION_API_URL", "http://127.0.0.1:8000")
 
 def log_message(level, message, details):
     """Sends a log message to the logging API endpoint with a retry mechanism."""
@@ -25,7 +30,7 @@ def log_message(level, message, details):
     for attempt in range(max_retries):
         try:
             # Use 127.0.0.1 to avoid ipv6/ipv4 resolution issues in some environments
-            response = requests.post("http://127.0.0.1:8000/api/logs/", json=log_data, timeout=5)
+            response = requests.post(f"{API_URL}/api/logs/", json=log_data, timeout=5)
             if response.status_code == 201:
                 return # Success
             else:
@@ -110,7 +115,7 @@ def decode_and_save_image(json_payload_str):
             
             # Using 127.0.0.1 for reliability
             read_res = requests.post(
-                f"http://127.0.0.1:8000/meters/{dev_mac_raw}/reading_data", 
+                f"{API_URL}/meters/{dev_mac_raw}/reading_data",
                 json=api_reading_payload,
                 headers=headers,
                 timeout=5
@@ -125,7 +130,7 @@ def decode_and_save_image(json_payload_str):
                     log_message("INFO", f"Meter {dev_mac_raw} not found. Attempting auto-provisioning.", {})
                     
                     # Get default organization ID
-                    org_res = requests.get("http://127.0.0.1:8000/api/organizations/", headers=headers, timeout=5)
+                    org_res = requests.get(f"{API_URL}/api/organizations/", headers=headers, timeout=5)
                     default_org_id = 1  # Fallback
                     if org_res.status_code == 200:
                         orgs = org_res.json()
@@ -142,7 +147,7 @@ def decode_and_save_image(json_payload_str):
                         "organization_id": default_org_id
                     }
                     create_res = requests.post(
-                        "http://127.0.0.1:8000/meters/", 
+                        f"{API_URL}/meters/",
                         json=create_meter_payload, 
                         headers=headers,
                         timeout=5
@@ -153,7 +158,7 @@ def decode_and_save_image(json_payload_str):
                     if create_res.status_code in [200, 201]:
                          # Retry reading post
                          retry_res = requests.post(
-                            f"http://127.0.0.1:8000/meters/{dev_mac_raw}/reading_data", 
+                            f"{API_URL}/meters/{dev_mac_raw}/reading_data",
                             json=api_reading_payload,
                             headers=headers,
                             timeout=5
@@ -183,7 +188,7 @@ def get_auth_token():
     
     try:
         response = requests.post(
-            "http://127.0.0.1:8000/token",
+            f"{API_URL}/token",
             data={"username": username, "password": password},
             timeout=5
         )

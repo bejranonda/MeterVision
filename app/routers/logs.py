@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from sqlmodel import Session
+from sqlmodel import Session, select
 from ..database import get_session
 from ..models.log import Log, LogCreate, LogRead
 from ..services import log_service
@@ -36,5 +36,7 @@ def read_logs(
     For simplicity, any authenticated user can read logs.
     In a real application, this would be tied to roles and organizations.
     """
-    logs = session.query(Log).offset(skip).limit(limit).all()
+    logs = session.exec(
+        select(Log).order_by(Log.id.desc()).offset(skip).limit(limit)
+    ).all()
     return logs
